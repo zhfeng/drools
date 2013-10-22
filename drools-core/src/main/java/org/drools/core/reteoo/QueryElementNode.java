@@ -44,6 +44,7 @@ import org.kie.api.runtime.rule.Variable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +62,8 @@ public class QueryElementNode extends LeftTupleSource
 
     protected boolean           openQuery;
 
+    private boolean             recursive;
+
     public QueryElementNode() {
         // for serialization
     }
@@ -71,9 +74,9 @@ public class QueryElementNode extends LeftTupleSource
                             final boolean tupleMemoryEnabled,
                             final boolean openQuery,
                             final BuildContext context) {
-        super( id,
-               context.getPartitionId(),
-               context.getRuleBase().getConfiguration().isMultithreadEvaluation() );
+        super(id,
+              context.getPartitionId(),
+              context.getRuleBase().getConfiguration().isMultithreadEvaluation());
         setLeftTupleSource(tupleSource);
         this.queryElement = queryElement;
         this.tupleMemoryEnabled = tupleMemoryEnabled;
@@ -83,10 +86,11 @@ public class QueryElementNode extends LeftTupleSource
 
     public void readExternal(ObjectInput in) throws IOException,
                                             ClassNotFoundException {
-        super.readExternal( in );        
+        super.readExternal(in);        
         queryElement = (QueryElement) in.readObject();
         tupleMemoryEnabled = in.readBoolean();
         openQuery = in.readBoolean();
+        recursive = in.readBoolean();
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -94,6 +98,7 @@ public class QueryElementNode extends LeftTupleSource
         out.writeObject( queryElement );
         out.writeBoolean( tupleMemoryEnabled );
         out.writeBoolean( openQuery );
+        out.writeBoolean( recursive );
     }
 
     public void networkUpdated(UpdateContext updateContext) {
@@ -277,6 +282,14 @@ public class QueryElementNode extends LeftTupleSource
      */
     public void setPreviousLeftTupleSinkNode(final LeftTupleSinkNode previous) {
         this.previousTupleSinkNode = previous;
+    }
+
+    public void setRecursive(boolean recursive) {
+        this.recursive = recursive;
+    }
+
+    public boolean isRecursive() {
+        return this.recursive;
     }
 
     public static class UnificationNodeViewChangedEventListener
@@ -609,6 +622,45 @@ public class QueryElementNode extends LeftTupleSource
 
         public void setNodeCleanWithoutNotify() {
             smem.updateCleanNodeMask( nodePosMaskBit );
+        }
+    }
+
+    public static class QueryGoalKey {
+        private String   name;
+        private Class[] arguments;
+
+        public void QueryGaolKey(String name, Class... arguments) {
+            this.name = name;
+            this.arguments = arguments;
+        }
+
+        public Class[] getArguments() {
+            return arguments;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) { return true; }
+            if (o == null || getClass() != o.getClass()) { return false; }
+
+            QueryGoalKey that = (QueryGoalKey) o;
+
+            if (!name.equals(that.name)) { return false; }
+            if (!Arrays.equals(arguments, that.arguments)) { return false; }
+
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + Arrays.hashCode(arguments);
+            return result;
         }
     }
 

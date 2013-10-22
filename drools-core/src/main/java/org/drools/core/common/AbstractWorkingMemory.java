@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -434,6 +436,9 @@ public class AbstractWorkingMemory
                                                        null,
                                                        null,
                                                        null );
+            //Map<DroolsQuery, Integer> existingQueries = new HashMap<DroolsQuery, Integer>();
+            //existingQueries.put(queryObject, 1);
+            //queryObject.setExistingQueries(existingQueries);
 
             InternalFactHandle handle = this.handleFactory.newFactHandle( queryObject,
                                                                           null,
@@ -499,6 +504,10 @@ public class AbstractWorkingMemory
                                                        null,
                                                        null,
                                                        null );
+            Map<DroolsQuery, Integer> existingQueries = new HashMap<DroolsQuery, Integer>();
+            existingQueries.put(queryObject, 1);
+            queryObject.setExistingQueries(existingQueries);
+
             InternalFactHandle handle = this.handleFactory.newFactHandle( queryObject,
                                                                           null,
                                                                           this,

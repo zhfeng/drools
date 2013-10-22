@@ -37,4 +37,8 @@ public class LiveQueryImpl
         this.wm.closeLiveQuery(this.factHandle);
     }
 
+    public InternalFactHandle getFactHandle() {
+        return factHandle;
+    }
+
 }

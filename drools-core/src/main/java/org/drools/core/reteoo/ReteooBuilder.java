@@ -50,18 +50,20 @@ public class ReteooBuilder
     // Instance members
     // ------------------------------------------------------------
 
-    private static final long           serialVersionUID = 510l;
+    private static final long serialVersionUID = 510l;
 
     /** The RuleBase */
-    private transient InternalRuleBase  ruleBase;
+    private transient InternalRuleBase ruleBase;
 
-    private Map<String, BaseNode[]>       rules;
+    private Map<String, BaseNode[]>     rules;
 
     private Map<String, WindowNode>     namedWindows;
 
     private transient RuleBuilder       ruleBuilder;
 
     private IdGenerator                 idGenerator;
+
+    private Map<String, List<QueryElementNode>> nestedQueryNodeLookup;
 
     // ------------------------------------------------------------
     // Constructors
@@ -75,19 +77,15 @@ public class ReteooBuilder
      * Construct a <code>Builder</code> against an existing <code>Rete</code>
      * network.
      */
-    public ReteooBuilder( final InternalRuleBase ruleBase ) {
+    public ReteooBuilder(final InternalRuleBase ruleBase) {
         this.ruleBase = ruleBase;
         this.rules = new HashMap<String, BaseNode[]>();
         this.namedWindows = new HashMap<String, WindowNode>();
 
         //Set to 1 as Rete node is set to 0
-        this.idGenerator = new IdGenerator( 1 );
+        this.idGenerator = new IdGenerator(1);
         this.ruleBuilder = ruleBase.getConfiguration().getComponentFactory().getRuleBuilderFactory().newRuleBuilder();
     }
-
-    // ------------------------------------------------------------
-    // Instance methods
-    // ------------------------------------------------------------
 
     /**
      * Add a <code>Rule</code> to the network.
@@ -101,12 +99,12 @@ public class ReteooBuilder
      * @throws InvalidPatternException
      */
     public synchronized void addRule(final Rule rule) throws InvalidPatternException {
-        final List<TerminalNode> terminals = this.ruleBuilder.addRule( rule,
-                                                                       this.ruleBase,
-                                                                       this.idGenerator );
+        final List<TerminalNode> terminals = this.ruleBuilder.addRule(rule,
+                                                                      this.ruleBase,
+                                                                      this.idGenerator);
 
-        this.rules.put( rule.getName(),
-                        terminals.toArray( new BaseNode[terminals.size()] ) );
+        this.rules.put(rule.getName(),
+                       terminals.toArray(new BaseNode[terminals.size()]));
     }
 
     public void addEntryPoint( String id ) {
@@ -405,6 +403,13 @@ public class ReteooBuilder
         this.ruleBase = reteooRuleBase;
 
         this.ruleBuilder = ruleBase.getConfiguration().getComponentFactory().getRuleBuilderFactory().newRuleBuilder();
+    }
+
+    public  Map<String, List<QueryElementNode>> getNestedQueryNodeLookup() {
+        if ( nestedQueryNodeLookup == null ) {
+            nestedQueryNodeLookup = new HashMap<String, List<QueryElementNode>>();
+        }
+        return nestedQueryNodeLookup;
     }
 
 }

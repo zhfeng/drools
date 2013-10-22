@@ -18,7 +18,9 @@ import org.drools.compiler.Address;
 import org.drools.compiler.CommonTestMethodBase;
 import org.drools.core.InitialFact;
 import org.drools.compiler.Person;
+import org.drools.core.QueryResult;
 import org.drools.core.base.ClassObjectType;
+import org.drools.core.base.DroolsQuery;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalRuleBase;
 import org.drools.core.impl.KnowledgeBaseImpl;
@@ -30,11 +32,14 @@ import org.drools.core.reteoo.BetaNode;
 import org.drools.core.reteoo.ExistsNode;
 import org.drools.core.reteoo.FromNode;
 import org.drools.core.reteoo.FromNode.FromMemory;
+import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.NotNode;
 import org.drools.core.reteoo.ObjectTypeNode;
+import org.drools.core.reteoo.ObjectTypeNode.ObjectTypeNodeMemory;
 import org.drools.core.reteoo.QueryElementNode;
 import org.drools.core.reteoo.ReteooWorkingMemoryInterface;
 import org.drools.core.reteoo.RightInputAdapterNode;
+import org.drools.core.runtime.rule.impl.LiveQueryImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kie.internal.KnowledgeBase;
@@ -1414,6 +1419,7 @@ public class BackwardChainingTest extends CommonTestMethodBase {
         for ( QueryResultsRow r : results ) {
             l.add( Arrays.asList( new String[]{(String) r.get( "x" ), (String) r.get( "y" )} ) );
         }
+        System.out.println( l );
         assertEquals( 3,
                       results.size() );
         assertContains( Arrays.asList( new String[]{"key", "desk"} ),
@@ -1487,6 +1493,544 @@ public class BackwardChainingTest extends CommonTestMethodBase {
                         l );
         assertContains( Arrays.asList( new String[]{"key", "desk"} ),
                         l );
+    }
+
+    @Test(timeout = 10000)
+    public void testVarientRecursionPassiveQuery() throws Exception {
+        String str = "" +
+                     "package org.drools.compiler.test  \n" +
+
+                     "import java.util.List\n" +
+                     "import java.util.ArrayList\n" +
+
+                     "import java.util.Map\n" +
+                     "import java.util.HashMap\n" +
+
+                     "global List list\n" +
+
+                     "dialect \"mvel\"\n" +
+
+                     "\n" +
+                     "declare Location\n" +
+                     "    thing : String \n" +
+                     "    location : String \n" +
+                     "end" +
+                     "\n" +
+                     "query isContainedIn( String x, String y ) \n" +
+                     "    Location(x, y;)\n" +
+                     "    or \n" +
+                     "    ( Location(z, y;) and isContainedIn(x, z;) )\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule init when\n" +
+                     "then\n" +
+                     "        insert( new Location(\"office\", \"house\") );\n" +
+                     "        insert( new Location(\"desk\", \"office\") );\n" +
+                     "        insert( new Location(\"envelope\", \"desk\") );\n" +
+                     "        insert( new Location(\"key\", \"envelope\") );\n" +
+                     "        insert( new Location(\"desk\", \"key\") );\n" +
+                     "        \n" +
+                     "end\n" +
+                     "" +
+                     "";
+
+        KnowledgeBase kbase = SerializationHelper.serializeObject( loadKnowledgeBaseFromString( str ) );
+        StatefulKnowledgeSession ksession = createKnowledgeSession( kbase );
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ksession.setGlobal( "list",
+                            list );
+
+        QueryResults results = null;
+        ksession.fireAllRules();
+
+        results = ksession.getQueryResults( "isContainedIn", new Object[] { "key", "house" } );
+        List<QueryResultsRow> resultList =  asList( results );
+        assertEquals( 1, results.size() );
+        assertEquals( "key", resultList.get(0).get("x"));
+        assertEquals( "house", resultList.get(0).get("y"));
+
+
+        results = ksession.getQueryResults( "isContainedIn", new Object[] { "desk", "house" } );
+        resultList =  asList( results );
+        assertEquals( 2, results.size() );
+        assertEquals( "desk", resultList.get(0).get("x"));
+        assertEquals( "house", resultList.get(0).get("y"));
+        assertEquals( "desk", resultList.get(1).get("x"));
+        assertEquals( "house", resultList.get(1).get("y"));
+    }
+
+    @Test(timeout = 10000)
+    public void testVarientRecursionPassiveQueryVariable() throws Exception {
+        String str = "" +
+                     "package org.drools.compiler.test  \n" +
+
+                     "import java.util.List\n" +
+                     "import java.util.ArrayList\n" +
+
+                     "import java.util.Map\n" +
+                     "import java.util.HashMap\n" +
+
+                     "global List list\n" +
+
+                     "dialect \"mvel\"\n" +
+
+                     "\n" +
+                     "declare Location\n" +
+                     "    thing : String \n" +
+                     "    location : String \n" +
+                     "end" +
+                     "\n" +
+                     "query isContainedIn( String x, String y ) \n" +
+                     "    Location(x, y;)\n" +
+                     "    or \n" +
+                     "    ( Location(z, y;) and isContainedIn(x, z;) )\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule init when\n" +
+                     "then\n" +
+                     "        insert( new Location(\"office\", \"house\") );\n" +
+                     "        insert( new Location(\"desk\", \"office\") );\n" +
+                     "        insert( new Location(\"envelope\", \"desk\") );\n" +
+                     "        insert( new Location(\"key\", \"envelope\") );\n" +
+                     "        insert( new Location(\"desk\", \"key\") );\n" +
+                     "        \n" +
+                     "end\n" +
+                     "" +
+                     "";
+
+        KnowledgeBase kbase = SerializationHelper.serializeObject( loadKnowledgeBaseFromString( str ) );
+        StatefulKnowledgeSession ksession = createKnowledgeSession( kbase );
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ksession.setGlobal( "list",
+                            list );
+
+        QueryResults results = null;
+        List<QueryResultsRow> resultList = null;
+        ksession.fireAllRules();
+
+//        results = ksession.getQueryResults( "isContainedIn", new Object[] { "key", "house" } );
+//        resultList =  asList( results );
+//        assertEquals( 1, results.size() );
+//        assertEquals( "key", resultList.get(0).get("x"));
+//        assertEquals( "house", resultList.get(0).get("y"));
+
+
+        results = ksession.getQueryResults( "isContainedIn", new Object[] { "key", Variable.v } );
+        resultList =  asList( results );
+        System.out.println( "results: " + resultList.get(0).get("x")  +  " : " + resultList.get(0).get("y")  );
+        assertEquals( 3, results.size() );
+//        assertEquals( "desk", resultList.get(0).get("x"));
+//        assertEquals( "house", resultList.get(0).get("y"));
+//        assertEquals( "desk", resultList.get(1).get("x"));
+//        assertEquals( "house", resultList.get(1).get("y"));
+    }
+
+
+    @Test(timeout = 10000)
+    public void testVarientRecursionPassiveQueryNested() throws Exception {
+        String str = "" +
+                     "package org.drools.compiler.test  \n" +
+
+                     "import java.util.List\n" +
+                     "import java.util.ArrayList\n" +
+
+                     "import java.util.Map\n" +
+                     "import java.util.HashMap\n" +
+
+                     "global List list\n" +
+
+                     "dialect \"mvel\"\n" +
+
+                     "\n" +
+                     "declare Location\n" +
+                     "    thing : String \n" +
+                     "    location : String \n" +
+                     "end" +
+                     "\n" +
+                     "query isContainedIn( String x, String y ) \n" +
+                     "    Location(x, y;)\n" +
+                     "    or \n" +
+                     "    isNestedContainedIn(x, y;)\n" +
+                     "end\n" +
+                     "query isNestedContainedIn( String x, String y ) \n" +
+                     "    Location(z, y;) isContainedIn(x, z;)\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule init when\n" +
+                     "then\n" +
+                     "        insert( new Location(\"office\", \"house\") );\n" +
+                     "        insert( new Location(\"desk\", \"office\") );\n" +
+                     "        insert( new Location(\"envelope\", \"desk\") );\n" +
+                     "        insert( new Location(\"key\", \"envelope\") );\n" +
+                     "        insert( new Location(\"desk\", \"key\") );\n" +
+                     "        \n" +
+                     "end\n" +
+                     "" +
+                     "";
+
+        KnowledgeBase kbase = SerializationHelper.serializeObject( loadKnowledgeBaseFromString( str ) );
+        StatefulKnowledgeSession ksession = createKnowledgeSession( kbase );
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ksession.setGlobal( "list",
+                            list );
+
+        QueryResults results = null;
+        ksession.fireAllRules();
+
+        results = ksession.getQueryResults( "isContainedIn", new Object[] { "key", "house" } );
+        List<QueryResultsRow> resultList =  asList( results );
+        assertEquals( 1, results.size() );
+        assertEquals( "key", resultList.get(0).get("x"));
+        assertEquals( "house", resultList.get(0).get("y"));
+
+
+        results = ksession.getQueryResults( "isContainedIn", new Object[] { "desk", "house" } );
+        resultList =  asList( results );
+        assertEquals( 2, results.size() );
+        assertEquals( "desk", resultList.get(0).get("x"));
+        assertEquals( "house", resultList.get(0).get("y"));
+        assertEquals( "desk", resultList.get(1).get("x"));
+        assertEquals( "house", resultList.get(1).get("y"));
+    }
+
+    @Test(timeout = 10000)
+    public void testVarientRecursionOpenQuery() throws Exception {
+        String str = "" +
+                     "package org.drools.compiler.test  \n" +
+
+                     "import java.util.List\n" +
+                     "import java.util.ArrayList\n" +
+
+                     "import java.util.Map\n" +
+                     "import java.util.HashMap\n" +
+
+                     "global List list\n" +
+
+                     "dialect \"mvel\"\n" +
+
+                     "\n" +
+                     "declare Location\n" +
+                     "    thing : String \n" +
+                     "    location : String \n" +
+                     "end" +
+                     "\n" +
+                     "query isContainedIn( String x, String y ) \n" +
+                     "    Location(x, y;)\n" +
+                     "    or \n" +
+                     "    ( Location(z, y;) and isContainedIn(x, z;) )\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule init when\n" +
+                     "then\n" +
+                     "        insert( new Location(\"office\", \"house\") );\n" +
+                     "        insert( new Location(\"desk\", \"office\") );\n" +
+                     "        insert( new Location(\"envelope\", \"desk\") );\n" +
+                     "        insert( new Location(\"key\", \"envelope\") );\n" +
+                     "        \n" +
+                     "end\n" +
+                     "" +
+                     "rule go1 when\n" +
+                     "   String( this == 'go1' )\n" +
+                     "then\n" +
+                     "   insert( new Location('desk', 'key') );\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule go2 when\n" +
+                     "   String( this == 'go2' )\n" +
+                     "   l : Location('desk', 'key';)\n" +
+                     "then\n" +
+                     "   modify(l) { setThing('string') };\n" +
+                     "end\n" +
+                     "rule go3 when\n" +
+                     "   String( this == 'go3' )\n" +
+                     "   l : Location('string', 'key';)\n" +
+                     "then\n" +
+                     "   modify(l) { setThing('desk') };\n" +
+                     "end\n" +
+                     "rule go4 when\n" +
+                     "   String( this == 'go4' )\n" +
+                     "   l : Location('desk', 'key';)\n" +
+                     "then\n" +
+                     "  retract(l);\n" +
+                     "end\n" +
+                     "rule go5 when\n" +
+                     "   String( this == 'go5' )\n" +
+                     "   l : Location('desk', 'office';)\n" +
+                     "then\n" +
+                     "  retract(l);\n" +
+                     "end\n" +
+                     "";
+
+        KnowledgeBase kbase = SerializationHelper.serializeObject( loadKnowledgeBaseFromString( str ) );
+        StatefulKnowledgeSession ksession = createKnowledgeSession( kbase );
+        ReteooWorkingMemoryInterface wm = ((StatefulKnowledgeSessionImpl)kbase.newStatefulKnowledgeSession()).session;
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ksession.setGlobal( "list",
+                            list );
+
+        ksession.fireAllRules();
+
+        final List<Row> inserted = new ArrayList();
+        final List<Row> deleted = new ArrayList();
+        final List<Row> updated = new ArrayList();
+        LiveQueryImpl liveQuery = (LiveQueryImpl) ksession.openLiveQuery("isContainedIn", new Object[]{"desk", "office"}, new ViewChangedEventListener() {
+            @Override
+            public void rowInserted(Row row) {
+                inserted.add( row );
+                System.out.println( row );
+            }
+
+            @Override
+            public void rowDeleted(Row row) {
+                deleted.add( row );
+            }
+
+            @Override
+            public void rowUpdated(Row row) {
+                updated.add( row );
+            }
+        });
+
+        InternalFactHandle fh = liveQuery.getFactHandle();
+        DroolsQuery dq = (DroolsQuery) fh.getObject();
+        Map<DroolsQuery, Integer> existingQueries = dq.getExistingQueries();
+        assertEquals( 4, existingQueries.size() );
+
+        FactHandle fh1 = ksession.insert("go1");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 2, inserted.size() );
+        assertEquals( 0, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", inserted.get(0).get("x"));
+        assertEquals( "office", inserted.get(0).get("y"));
+        assertEquals( "desk", inserted.get(1).get("x"));
+        assertEquals( "office", inserted.get(1).get("y"));
+        inserted.clear();
+
+        ksession.delete(fh1);
+        FactHandle fh2 = ksession.insert("go2");
+        ksession.fireAllRules();
+        assertEquals( 5, existingQueries.size() );
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
+
+        ksession.delete(fh2);
+        FactHandle fh3 = ksession.insert("go3");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 1, inserted.size() );
+        assertEquals( 0, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", inserted.get(0).get("x"));
+        assertEquals( "office", inserted.get(0).get("y"));
+        inserted.clear();
+
+        ksession.delete(fh3);
+        FactHandle fh4 = ksession.insert("go4");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
+
+        ksession.delete(fh4);
+        FactHandle fh5 = ksession.insert("go5");  // deletes all subgaols too
+        ksession.fireAllRules();
+        assertEquals( 1, existingQueries.size() );
+
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
+    }
+
+    @Test(timeout = 10000)
+    public void testVarientRecursionOpenQueryNested() throws Exception {
+        String str = "" +
+                     "package org.drools.compiler.test  \n" +
+
+                     "import java.util.List\n" +
+                     "import java.util.ArrayList\n" +
+
+                     "import java.util.Map\n" +
+                     "import java.util.HashMap\n" +
+
+                     "global List list\n" +
+
+                     "dialect \"mvel\"\n" +
+
+                     "\n" +
+                     "declare Location\n" +
+                     "    thing : String \n" +
+                     "    location : String \n" +
+                     "end" +
+                     "\n" +
+                     "query isContainedIn( String x, String y ) \n" +
+                     "    Location(x, y;)\n" +
+                     "    or \n" +
+                     "    isNestedContainedIn(x, y;)\n" +
+                     "end\n" +
+                     "query isNestedContainedIn( String x, String y ) \n" +
+                     "    Location(z, y;) isContainedIn(x, z;)\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule init when\n" +
+                     "then\n" +
+                     "        insert( new Location(\"office\", \"house\") );\n" +
+                     "        insert( new Location(\"desk\", \"office\") );\n" +
+                     "        insert( new Location(\"envelope\", \"desk\") );\n" +
+                     "        insert( new Location(\"key\", \"envelope\") );\n" +
+                     "        \n" +
+                     "end\n" +
+                     "" +
+                     "rule go1 when\n" +
+                     "   String( this == 'go1' )\n" +
+                     "then\n" +
+                     "   insert( new Location('desk', 'key') );\n" +
+                     "end\n" +
+                     "\n" +
+                     "rule go2 when\n" +
+                     "   String( this == 'go2' )\n" +
+                     "   l : Location('desk', 'key';)\n" +
+                     "then\n" +
+                     "   modify(l) { setThing('string') };\n" +
+                     "end\n" +
+                     "rule go3 when\n" +
+                     "   String( this == 'go3' )\n" +
+                     "   l : Location('string', 'key';)\n" +
+                     "then\n" +
+                     "   modify(l) { setThing('desk') };\n" +
+                     "end\n" +
+                     "rule go4 when\n" +
+                     "   String( this == 'go4' )\n" +
+                     "   l : Location('desk', 'key';)\n" +
+                     "then\n" +
+                     "  retract(l);\n" +
+                     "end\n" +
+                     "rule go5 when\n" +
+                     "   String( this == 'go5' )\n" +
+                     "   l : Location('desk', 'office';)\n" +
+                     "then\n" +
+                     "  retract(l);\n" +
+                     "end\n" +
+                     "";
+
+        KnowledgeBase kbase = SerializationHelper.serializeObject( loadKnowledgeBaseFromString( str ) );
+        StatefulKnowledgeSession ksession = createKnowledgeSession( kbase );
+        ReteooWorkingMemoryInterface wm = ((StatefulKnowledgeSessionImpl)kbase.newStatefulKnowledgeSession()).session;
+
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        ksession.setGlobal( "list",
+                            list );
+
+        ksession.fireAllRules();
+
+        final List<Row> inserted = new ArrayList();
+        final List<Row> deleted = new ArrayList();
+        final List<Row> updated = new ArrayList();
+        LiveQueryImpl liveQuery = (LiveQueryImpl) ksession.openLiveQuery("isContainedIn", new Object[]{"desk", "office"}, new ViewChangedEventListener() {
+            @Override
+            public void rowInserted(Row row) {
+                inserted.add( row );
+                System.out.println( row );
+            }
+
+            @Override
+            public void rowDeleted(Row row) {
+                deleted.add( row );
+            }
+
+            @Override
+            public void rowUpdated(Row row) {
+                updated.add( row );
+            }
+        });
+
+        InternalFactHandle fh = liveQuery.getFactHandle();
+        DroolsQuery dq = (DroolsQuery) fh.getObject();
+        Map<DroolsQuery, Integer> existingQueries = dq.getExistingQueries();
+        assertEquals( 4, existingQueries.size() );
+
+        FactHandle fh1 = ksession.insert("go1");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 2, inserted.size() );
+        assertEquals( 0, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", inserted.get(0).get("x"));
+        assertEquals( "office", inserted.get(0).get("y"));
+        assertEquals( "desk", inserted.get(1).get("x"));
+        assertEquals( "office", inserted.get(1).get("y"));
+        inserted.clear();
+
+        ksession.delete(fh1);
+        FactHandle fh2 = ksession.insert("go2");
+        ksession.fireAllRules();
+        assertEquals( 5, existingQueries.size() );
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
+
+        ksession.delete(fh2);
+        FactHandle fh3 = ksession.insert("go3");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 1, inserted.size() );
+        assertEquals( 0, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", inserted.get(0).get("x"));
+        assertEquals( "office", inserted.get(0).get("y"));
+        inserted.clear();
+
+        ksession.delete(fh3);
+        FactHandle fh4 = ksession.insert("go4");
+        ksession.fireAllRules();
+        assertEquals( 4, existingQueries.size() );
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
+
+        ksession.delete(fh4);
+        FactHandle fh5 = ksession.insert("go5");  // deletes all subgaols too
+        ksession.fireAllRules();
+        assertEquals( 1, existingQueries.size() );
+
+        assertEquals( 0, inserted.size() );
+        assertEquals( 1, deleted.size() );
+        assertEquals( 0, updated.size() );
+
+        assertEquals( "desk", deleted.get(0).get("x"));
+        assertEquals( "office", deleted.get(0).get("y"));
+        deleted.clear();
     }
 
     @Test(timeout = 10000)
@@ -1877,7 +2421,7 @@ public class BackwardChainingTest extends CommonTestMethodBase {
                         list );        
     }
 
-    @Test //(timeout = 10000)
+    @Test(timeout = 10000)
     public void testOpenBackwardChain() throws Exception {
         // http://www.amzi.com/AdventureInProlog/advtop.php
 
@@ -3205,4 +3749,13 @@ public class BackwardChainingTest extends CommonTestMethodBase {
         assertEquals( Arrays.asList( 178, 178, 178 ), list );
 
     }
+
+    public static <E> List<E> asList(Iterable<E> iter) {
+        List<E> list = new ArrayList<E>();
+        for (E item : iter) {
+            list.add(item);
+        }
+        return list;
+    }
+
 }

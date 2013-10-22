@@ -103,8 +103,8 @@ public class ReteooRuleBuilder implements RuleBuilder {
      * @throws InvalidPatternException
      */
     public List<TerminalNode> addRule( final Rule rule,
-            final InternalRuleBase rulebase,
-            final ReteooBuilder.IdGenerator idGenerator ) throws InvalidPatternException {
+                                       final InternalRuleBase rulebase,
+                                       final ReteooBuilder.IdGenerator idGenerator ) throws InvalidPatternException {
         // the list of terminal nodes
         final List<TerminalNode> nodes = new ArrayList<TerminalNode>();
 
@@ -211,8 +211,8 @@ public class ReteooRuleBuilder implements RuleBuilder {
     }
 
     public void addEntryPoint( final String id,
-            final InternalRuleBase rulebase,
-            final ReteooBuilder.IdGenerator idGenerator ) {
+                               final InternalRuleBase rulebase,
+                               final ReteooBuilder.IdGenerator idGenerator ) {
         // creates a clean build context for each subrule
         final BuildContext context = new BuildContext( rulebase,
                                                        idGenerator );

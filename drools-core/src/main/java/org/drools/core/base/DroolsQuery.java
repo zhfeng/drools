@@ -16,42 +16,33 @@
 
 package org.drools.core.base;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.drools.core.common.LeftTupleSets;
 import org.drools.core.common.WorkingMemoryAction;
 import org.drools.core.phreak.StackEntry;
-import org.drools.core.reteoo.QueryElementNode.QueryElementNodeMemory;
-import org.drools.core.util.index.RightTupleList;
 import org.drools.core.reteoo.LeftTupleSink;
 import org.drools.core.reteoo.PathMemory;
+import org.drools.core.reteoo.QueryElementNode.QueryElementNodeMemory;
 import org.drools.core.rule.Query;
 import org.kie.api.runtime.rule.Variable;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class DroolsQuery extends ArrayElements {
     private final String                           name;
     private       InternalViewChangedEventListener resultsCollector;
     private       Query                            query;
     private       boolean                          open;
-
-    private Variable[] vars;
-
-    private RightTupleList resultInsertRightTupleList;
-    private RightTupleList resultUpdateRightTupleList;
-    private RightTupleList resultRetractRightTupleList;
-
-    private WorkingMemoryAction action;
-
-    private LeftTupleSets resultLeftTuples;
-
-    private QueryElementNodeMemory qmem;
-
-    private List<PathMemory> pmems;
-
-    private StackEntry stackEntry;
-
-    private LeftTupleSink sink;
+    private       Variable[]                       vars;
+    private       WorkingMemoryAction              action;
+    private       LeftTupleSets                    resultLeftTuples;
+    private       QueryElementNodeMemory           qmem;
+    private       List<PathMemory>                 pmems;
+    private       StackEntry                       stackEntry;
+    private       LeftTupleSink                    sink;
+    private       Map<DroolsQuery, Integer>        existingQueries;
 
     //    public DroolsQuery(DroolsQuery droolsQuery) {
     //        super( new Object[droolsQuery.getElements().length] );
@@ -90,29 +81,29 @@ public final class DroolsQuery extends ArrayElements {
         this.qmem = qmem;
         this.sink = sink;
     }
-    
+
     public void setParameters(final Object[] params) {
-        setElements( params );
+        setElements(params);
         // build the indexes to the Variables  
-        if ( params != null ) {
+        if (params != null) {
             vars = new Variable[params.length];
-            for ( int i = 0; i < params.length; i++ ) {
-                if ( params[i] == Variable.v ) {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i] == Variable.v) {
                     vars[i] = Variable.v;
                     params[i] = null;
                 }
             }
-        }        
+        }
     }
 
     public String getName() {
         return this.name;
     }
-    
+
     public Variable[] getVariables() {
         return this.vars;
-    }  
-    
+    }
+
     public LeftTupleSets getResultLeftTupleSets() {
         return resultLeftTuples;
     }
@@ -135,7 +126,7 @@ public final class DroolsQuery extends ArrayElements {
 
     public void setQuery(Query query) {
         // this is set later, as we don't yet know which Query will match this DroolsQuery propagation
-        this.query = query;     
+        this.query = query;
     }
 
     public Query getQuery() {
@@ -150,30 +141,6 @@ public final class DroolsQuery extends ArrayElements {
         return open;
     }
 
-    public RightTupleList getResultInsertRightTupleList() {
-        return resultInsertRightTupleList;
-    }
-
-    public void setResultInsertRightTupleList(RightTupleList evaluateActionsRightTupleList) {
-        this.resultInsertRightTupleList = evaluateActionsRightTupleList;
-    }
-
-    public RightTupleList getResultUpdateRightTupleList() {
-        return resultUpdateRightTupleList;
-    }
-
-    public void setResultUpdateRightTupleList(RightTupleList insertUpdateRightTupleList) {
-        this.resultUpdateRightTupleList = insertUpdateRightTupleList;
-    }
-
-    public RightTupleList getResultRetractRightTupleList() {
-        return resultRetractRightTupleList;
-    }
-
-    public void setResultRetractRightTupleList(RightTupleList retractRightTupleList) {
-        this.resultRetractRightTupleList = retractRightTupleList;
-    } 
-
     public WorkingMemoryAction getAction() {
         return action;
     }
@@ -182,31 +149,47 @@ public final class DroolsQuery extends ArrayElements {
         this.action = action;
     }
 
+    public Map<DroolsQuery, Integer> getExistingQueries() {
+        return existingQueries;
+    }
+
+    public void setExistingQueries(Map<DroolsQuery, Integer> existingQueries) {
+        this.existingQueries = existingQueries;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + (open ? 1231 : 1237);
-        result = prime * result + Arrays.hashCode( vars );
+        result = prime * result + Arrays.hashCode(vars);
         return result;
     }
 
 
     @Override
-    public boolean equals(Object obj) {
-        // DroolsQuery must be instance equals
-        return this == obj;
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+
+        DroolsQuery that = (DroolsQuery) o;
+
+        if (!name.equals(that.name)) { return false; }
+        if (!Arrays.equals(vars, that.vars)) { return false; }
+
+        Object[] elements = getElements();
+        if (!Arrays.equals(elements, that.getElements())) { return false; }
+
+        return true;
     }
 
     @Override
     public String toString() {
-        return "DroolsQuery [name=" + name + ", resultsCollector=" + resultsCollector + 
-                    ", query=" + query + ", open=" + open +
-                    ", args=" + Arrays.toString( getElements() ) +
-                    ", vars=" + Arrays.toString( vars ) + "]";
+        return "DroolsQuery [name=" + name + ", resultsCollector=" + resultsCollector +
+               ", query=" + query + ", open=" + open +
+               ", args=" + Arrays.toString(getElements()) +
+               ", vars=" + Arrays.toString(vars) + "]";
     }
-    
 
 
 }
