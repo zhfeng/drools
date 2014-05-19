@@ -8,6 +8,11 @@ import org.kie.api.KieBase;
 import org.kie.api.io.ResourceType;
 
 public class BayesWeaverFactory implements KieWeaverFactory<BayesWeaver> {
+
+    public BayesWeaverFactory() {
+
+    }
+
     @Override
     public void preInit(KieWeaverContext ctx) {
 
@@ -30,11 +35,11 @@ public class BayesWeaverFactory implements KieWeaverFactory<BayesWeaver> {
 
     @Override
     public ResourceType getResourceType() {
-        return null;
+        return ResourceType.BAYES;
     }
 
     @Override
     public BayesWeaver newKieWeaver(KieBase kieBase) {
-        return null;
+        return new BayesWeaver((org.drools.core.impl.InternalKnowledgeBase) kieBase );
     }
 }

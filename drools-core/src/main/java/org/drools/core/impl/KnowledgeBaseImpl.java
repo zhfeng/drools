@@ -16,7 +16,12 @@
 
 package org.drools.core.impl;
 
+import org.drools.core.definitions.impl.ResourceTypePackage;
 import org.drools.core.event.KieBaseEventSupport;
+import org.drools.core.weaver.KieWeaver;
+import org.drools.core.weaver.KieWeaverFactory;
+import org.drools.core.weaver.KieWeaverRegistry;
+import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.rule.FactHandle;
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.SessionConfiguration;
@@ -844,6 +849,15 @@ public class KnowledgeBaseImpl
                     for ( org.kie.api.definition.process.Process process : flows.values() ) {
                         // XXX: we could take the lock inside addProcess() out, but OTOH: this is what the VM is supposed to do ...
                         addProcess( process );
+                    }
+                }
+
+                if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
+                    for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
+                        ResourceType rt = rtkKpg.getResourceType();
+                        KieWeaverFactory factory = KieWeaverRegistry.getInstance().getKieWeaverFactory( rt );
+                        KieWeaver weaver = factory.newKieWeaver(this);
+                        weaver.weave( newPkg, rtkKpg );
                     }
                 }
 

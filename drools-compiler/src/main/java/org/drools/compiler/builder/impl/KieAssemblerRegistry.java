@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.drools.compiler.assembler.KieAssemblerContext;
+import org.drools.compiler.assembler.KieAssemblerContextImpl;
 import org.drools.compiler.assembler.KieAssemblerFactory;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.utils.ClassLoaderUtil;
@@ -62,7 +63,7 @@ public class KieAssemblerRegistry {
 
         List<KieAssemblerFactory> list = discoverAssemblers();
 
-        KieAssemblerContext ctx = null;
+        KieAssemblerContext ctx = new KieAssemblerContextImpl(list);
         for ( KieAssemblerFactory factory : list ) {
             factory.preInit(ctx);
         }
