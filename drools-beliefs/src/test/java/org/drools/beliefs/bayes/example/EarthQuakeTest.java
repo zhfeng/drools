@@ -112,15 +112,15 @@ public class EarthQuakeTest {
 
         bayesInstance.globalUpdate();
 
-        assertArray( new double[]{0.9, 0.1}, scaleDouble(6, bayesInstance.marginalize("JohnCalls").getDistribution()) );
+        assertArray( new double[]{0.9, 0.1}, scaleDouble(3, bayesInstance.marginalize("JohnCalls").getDistribution()) );
 
-        assertArray( new double[]{0.7, 0.3 }, scaleDouble( 6, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
+        assertArray( new double[]{0.7, 0.3 }, scaleDouble( 3, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
 
         assertArray( new double[]{0.374, 0.626}, scaleDouble(3, bayesInstance.marginalize("Burglary").getDistribution()) );
 
         assertArray( new double[]{ 0.231, 0.769}, scaleDouble( 3, bayesInstance.marginalize("Earthquake").getDistribution() ) );
 
-        assertArray( new double[]{1.0, 0.0}, scaleDouble(6, bayesInstance.marginalize("Alarm").getDistribution()) ); }
+        assertArray( new double[]{1.0, 0.0}, scaleDouble(3, bayesInstance.marginalize("Alarm").getDistribution()) ); }
 
     @Test
     public void testEathQuakeEvidence() {
@@ -129,15 +129,15 @@ public class EarthQuakeTest {
         bayesInstance.setLikelyhood(new BayesLikelyhood(graph, jtNode3, earthquakeNode, new double[]{1.0, 0.0}));
         bayesInstance.globalUpdate();
 
-        assertArray( new double[]{0.297, 0.703}, scaleDouble(6, bayesInstance.marginalize("JohnCalls").getDistribution()) );
+        assertArray( new double[]{0.297, 0.703}, scaleDouble(3, bayesInstance.marginalize("JohnCalls").getDistribution()) );
 
-        assertArray( new double[]{0.211, 0.789 }, scaleDouble( 6, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
+        assertArray( new double[]{0.211, 0.789 }, scaleDouble( 3, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
 
         assertArray( new double[]{.001, 0.999}, scaleDouble(3, bayesInstance.marginalize("Burglary").getDistribution()) );
 
         assertArray( new double[]{1.0, 0.0}, scaleDouble( 3, bayesInstance.marginalize("Earthquake").getDistribution() ) );
 
-        assertArray( new double[]{0.291, 0.709}, scaleDouble(6, bayesInstance.marginalize("Alarm").getDistribution()) );
+        assertArray( new double[]{0.291, 0.709}, scaleDouble(3, bayesInstance.marginalize("Alarm").getDistribution()) );
     }
 
     @Test
@@ -147,15 +147,15 @@ public class EarthQuakeTest {
         bayesInstance.setLikelyhood(new BayesLikelyhood(graph, jtNode1, johnCallsNode, new double[]{1.0, 0.0}));
         bayesInstance.globalUpdate();
 
-        assertArray( new double[]{1.0, 0.0}, scaleDouble(6, bayesInstance.marginalize("JohnCalls").getDistribution()) );
+        assertArray( new double[]{1.0, 0.0}, scaleDouble(3, bayesInstance.marginalize("JohnCalls").getDistribution()) );
 
-        assertArray( new double[]{0.04, 0.96 }, scaleDouble( 6, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
+        assertArray( new double[]{0.04, 0.96 }, scaleDouble( 3, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
 
         assertArray( new double[]{0.016, 0.984}, scaleDouble(3, bayesInstance.marginalize("Burglary").getDistribution()) );
 
         assertArray( new double[]{0.011, 0.989}, scaleDouble( 3, bayesInstance.marginalize("Earthquake").getDistribution() ) );
 
-        assertArray( new double[]{0.043, 0.957}, scaleDouble(6, bayesInstance.marginalize("Alarm").getDistribution()) );
+        assertArray( new double[]{0.043, 0.957}, scaleDouble(3, bayesInstance.marginalize("Alarm").getDistribution()) );
     }
 
     @Test
@@ -166,15 +166,15 @@ public class EarthQuakeTest {
         bayesInstance.setLikelyhood(new BayesLikelyhood(graph, jtNode3, earthquakeNode, new double[]{1.0, 0.0}));
         bayesInstance.globalUpdate();
 
-        assertArray( new double[]{1.0, 0.0}, scaleDouble(6, bayesInstance.marginalize("JohnCalls").getDistribution()) );
+        assertArray( new double[]{1.0, 0.0}, scaleDouble(3, bayesInstance.marginalize("JohnCalls").getDistribution()) );
 
-        assertArray( new double[]{0.618, 0.382 }, scaleDouble( 6, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
+        assertArray( new double[]{0.618, 0.382 }, scaleDouble( 3, bayesInstance.marginalize("MaryCalls").getDistribution() ) );
 
         assertArray( new double[]{0.003, 0.997}, scaleDouble(3, bayesInstance.marginalize("Burglary").getDistribution()) );
 
         assertArray( new double[]{ 1.0, 0.0}, scaleDouble( 3, bayesInstance.marginalize("Earthquake").getDistribution() ) );
 
-        assertArray( new double[]{0.881, 0.119}, scaleDouble(6, bayesInstance.marginalize("Alarm").getDistribution()) );
+        assertArray( new double[]{0.881, 0.119}, scaleDouble(3, bayesInstance.marginalize("Alarm").getDistribution()) );
     }
 
 }
