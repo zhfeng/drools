@@ -1,5 +1,6 @@
-package org.drools.beliefs.bayes.assembler;
+package org.drools.beliefs.bayes.integration;
 
+import org.drools.beliefs.bayes.assembler.BayesPackage;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.junit.Test;

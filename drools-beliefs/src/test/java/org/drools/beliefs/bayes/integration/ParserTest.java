@@ -1,4 +1,4 @@
-package org.drools.beliefs.bayes.assembler;
+package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.BayesVariable;

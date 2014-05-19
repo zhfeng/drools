@@ -1,4 +1,4 @@
-package org.drools.beliefs.bayes.assembler;
+package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.BayesInstance;
 import org.drools.beliefs.bayes.BayesVariableConstructor;

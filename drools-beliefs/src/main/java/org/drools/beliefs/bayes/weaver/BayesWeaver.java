@@ -14,6 +14,6 @@ public class BayesWeaver implements KieWeaver<BayesPackage> {
     }
 
     public void weave(KiePackage kiePkg, BayesPackage bayesPkg) {
-
+        System.out.println( "Hello World " );
     }
 }

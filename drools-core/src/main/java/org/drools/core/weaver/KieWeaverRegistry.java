@@ -60,7 +60,7 @@ public class KieWeaverRegistry {
 
         List<KieWeaverFactory> list = discoverWeavers();
 
-        KieWeaverContext ctx = null;
+        KieWeaverContext ctx = new KieWeaverContextImpl( list );
         for ( KieWeaverFactory factory : list ) {
             factory.preInit(ctx);
         }
@@ -104,7 +104,7 @@ public class KieWeaverRegistry {
                 list.add( factory );
                 register(factory.getResourceType(), factory);
             } catch ( Exception exc ) {
-                log.error( "Unable to build Kie fWeaver url={}\n", url.toExternalForm(), exc.getMessage() );
+                log.error( "Unable to build Kie Weaver url={}\n", url.toExternalForm(), exc.getMessage() );
             }
         }
 
