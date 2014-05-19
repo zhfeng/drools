@@ -46,7 +46,7 @@ public class KieAssemblerRegistry {
 
     private Map<ResourceType, KieAssemblerFactory> getRegistry() {
         if (registry == null) {
-            discoverAssemblers();
+            initAssemblers();
         }
 
         return registry;
