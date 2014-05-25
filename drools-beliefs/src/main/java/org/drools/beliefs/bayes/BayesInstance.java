@@ -3,6 +3,8 @@ package org.drools.beliefs.bayes;
 import org.drools.beliefs.graph.Graph;
 import org.drools.beliefs.graph.GraphNode;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,11 +19,12 @@ public class BayesInstance {
 
     private CliqueState[]              cliqueStates;
     private SeparatorState[]           sparatorStates;
-    private BayesVariable[]            vars;
     private BayesVariableState[]       varStates;
 
     private GlobalUpdateListener globalUpdateListener;
     private PassMessageListener  passMessageListener;
+
+    private Class                target;
 
     public BayesInstance(JunctionTree tree) {
         this.graph = tree.getGraph();
@@ -45,6 +48,30 @@ public class BayesInstance {
         }
 
         likelyhoods = new BayesLikelyhood[graph.size()];
+    }
+
+    public static void x(Class target) {
+        Constructor[] cons = target.getConstructors();
+        if ( cons != null ) {
+            for ( Constructor con : cons ) {
+                Annotation[] anns = con.getDeclaredAnnotations();
+                for ( Annotation ann : anns ) {
+                    if ( ann.annotationType() == BayesVariableConstructor.class ) {
+                        System.out.println( "hello" );
+                        Class[] paramTypes = con.getParameterTypes();
+                        if ( paramTypes[0] != BayesInstance.class ) {
+                            throw new RuntimeException( "First Argument must be " + BayesInstance.class.getSimpleName() );
+                        }
+                        Annotation[][] paramAnns = con.getParameterAnnotations();
+                        for ( int j = 1; j < paramAnns.length; j++ ) {
+                            if ( paramAnns[j][0].annotationType() == VarName.class ) {
+                                System.out.println( ((VarName)paramAnns[j][0]).value() );
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public GlobalUpdateListener getGlobalUpdateListener() {
