@@ -647,7 +647,7 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder {
     void addPackageForExternalType(Resource resource,
                                    ResourceType type,
                                    ResourceConfiguration configuration) throws Exception {
-        KieAssemblerFactory factory = KieAssemblerRegistry.getInstance().getKieAssemblerFactory(type);
+        KieAssemblerFactory factory = KieAssemblerRegistry.getInstance().getFactory(type);
         KieAssembler builder = factory.newKieAssembler(this);
         if (builder != null) {
             builder.addResource(resource,

@@ -855,7 +855,7 @@ public class KnowledgeBaseImpl
                 if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
                     for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
                         ResourceType rt = rtkKpg.getResourceType();
-                        KieWeaverFactory factory = KieWeaverRegistry.getInstance().getKieWeaverFactory( rt );
+                        KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
                         KieWeaver weaver = factory.newKieWeaver(this);
                         weaver.weave( newPkg, rtkKpg );
                     }
