@@ -1141,6 +1141,15 @@ public class KnowledgeBaseImpl
                 pkg.addProcess(flow);
             }
         }
+
+        if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
+            for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
+                ResourceType rt = rtkKpg.getResourceType();
+                KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
+                KieWeaver weaver = factory.newKieWeaver(this);
+                weaver.merge( pkg, rtkKpg );
+            }
+        }
     }
 
     public void addGlobal(String identifier, Class clazz) {

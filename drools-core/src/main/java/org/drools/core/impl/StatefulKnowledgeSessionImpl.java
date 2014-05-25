@@ -82,6 +82,9 @@ import org.drools.core.reteoo.SegmentMemory;
 import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.EntryPointId;
+import org.drools.core.runtime.KieRuntimeManager;
+import org.drools.core.runtime.KieRuntimeManagerFactory;
+import org.drools.core.runtime.KieRuntimeManagerRegistry;
 import org.drools.core.runtime.impl.ExecutionResultImpl;
 import org.drools.core.runtime.process.InternalProcessRuntime;
 import org.drools.core.runtime.process.ProcessRuntimeFactory;
@@ -105,6 +108,7 @@ import org.kie.api.event.process.ProcessEventListener;
 import org.kie.api.event.process.ProcessEventManager;
 import org.kie.api.event.rule.AgendaEventListener;
 import org.kie.api.event.rule.RuleRuntimeEventListener;
+import org.kie.api.io.ResourceType;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
@@ -247,6 +251,8 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     private InternalProcessRuntime processRuntime;
 
+    private Map<ResourceType, KieRuntimeManager> runtimeManagers;
+
     private transient ObjectMarshallingStrategyStore marshallingStore;
     private transient List                           ruleBaseListeners;
 
@@ -285,7 +291,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
              new RuleRuntimeEventSupport(),
              new AgendaEventSupport(),
              new RuleEventListenerSupport(),
-             null );
+             null);
     }
 
     public StatefulKnowledgeSessionImpl(final int id,
@@ -311,16 +317,16 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
 
     public StatefulKnowledgeSessionImpl(final int id,
-                                         final InternalKnowledgeBase kBase,
-                                         final FactHandleFactory handleFactory,
-                                         final boolean initInitFactHandle,
-                                         final long propagationContext,
-                                         final SessionConfiguration config,
-                                         final Environment environment,
-                                         final RuleRuntimeEventSupport workingMemoryEventSupport,
-                                         final AgendaEventSupport agendaEventSupport,
-                                         final RuleEventListenerSupport ruleEventListenerSupport,
-                                         final InternalAgenda agenda) {
+                                        final InternalKnowledgeBase kBase,
+                                        final FactHandleFactory handleFactory,
+                                        final boolean initInitFactHandle,
+                                        final long propagationContext,
+                                        final SessionConfiguration config,
+                                        final Environment environment,
+                                        final RuleRuntimeEventSupport workingMemoryEventSupport,
+                                        final AgendaEventSupport agendaEventSupport,
+                                        final RuleEventListenerSupport ruleEventListenerSupport,
+                                        final InternalAgenda agenda) {
         this.id = id;
         this.config = config;
         this.kBase = kBase;
@@ -347,15 +353,15 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         this.dateFormats = (DateFormats) this.environment.get(EnvironmentName.DATE_FORMATS);
         if (this.dateFormats == null) {
             this.dateFormats = new DateFormatsImpl();
-            this.environment.set( EnvironmentName.DATE_FORMATS,
-                                  this.dateFormats );
+            this.environment.set(EnvironmentName.DATE_FORMATS,
+                                 this.dateFormats);
         }
 
         final RuleBaseConfiguration conf = kBase.getConfiguration();
 
         this.sequential = conf.isSequential();
 
-        this.evaluatingActionQueue = new AtomicBoolean( false );
+        this.evaluatingActionQueue = new AtomicBoolean(false);
 
         this.ruleRuntimeEventSupport = workingMemoryEventSupport;
         this.agendaEventSupport = agendaEventSupport;
@@ -364,36 +370,69 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
         this.lock = new ReentrantLock();
 
         timerService = TimerServiceFactory.getTimerService(this.config);
-        ((AcceptsTimerJobFactoryManager) timerService).setTimerJobFactoryManager( config.getTimerJobFactoryManager() );
+        ((AcceptsTimerJobFactoryManager) timerService).setTimerJobFactoryManager(config.getTimerJobFactoryManager());
 
-        this.propagationIdCounter = new AtomicLong( propagationContext );
+        this.propagationIdCounter = new AtomicLong(propagationContext);
 
-        this.firing = new AtomicBoolean( false );
+        this.firing = new AtomicBoolean(false);
 
         initTransient();
 
-        this.opCounter = new AtomicLong( 0 );
-        this.lastIdleTimestamp = new AtomicLong( -1 );
+        this.opCounter = new AtomicLong(0);
+        this.lastIdleTimestamp = new AtomicLong(-1);
 
-        if ( agenda == null ) {
+        if (agenda == null) {
             this.agenda = kBase.getConfiguration().getComponentFactory().getAgendaFactory().createAgenda(kBase);
-        }  else {
+        } else {
             this.agenda = agenda;
         }
         this.agenda.setWorkingMemory(this);
-        
+
         this.processRuntime = createProcessRuntime();
 
-        if ( initInitFactHandle ) {
+        if (initInitFactHandle) {
             initInitialFact(kBase, null);
         }
+
+        //runtimeManagers = new HashMap<ResourceType, KieRuntimeManager>();
+    }
+
+    public KieRuntimeManager getKieRuntimeManager(ResourceType type){
+        //  Only ever one KieRuntimeManager is created, using the two-tone pattern.
+
+        KieRuntimeManager kruntimeManager;
+        if ( runtimeManagers == null ) {
+            kruntimeManager =  createRuntimeManager( type );
+        } else {
+            kruntimeManager = runtimeManagers.get(type);
+            if (kruntimeManager == null) {
+                kruntimeManager =  createRuntimeManager( type );
+            }
+        }
+
+        return kruntimeManager;
+    }
+
+    public synchronized KieRuntimeManager createRuntimeManager(ResourceType type) {
+        // This is sychronized to ensure that only ever one is created, using the two-tone pattern.
+        if ( runtimeManagers == null ) {
+            runtimeManagers = new HashMap<ResourceType, KieRuntimeManager>();
+        }
+
+        KieRuntimeManager kruntimeManager = runtimeManagers.get(type);
+        if (kruntimeManager == null) {
+            KieRuntimeManagerFactory<KieRuntimeManager> factory = KieRuntimeManagerRegistry.getInstance().getFactory(type);
+            kruntimeManager = factory.newKieRuntime( this );
+        }
+
+        return kruntimeManager;
     }
 
     public EntryPoint getEntryPoint(String name) {
         return getWorkingMemoryEntryPoint(name);
     }
 
-    public Collection< ? extends org.kie.api.runtime.rule.EntryPoint> getEntryPoints() {
+    public Collection<? extends org.kie.api.runtime.rule.EntryPoint> getEntryPoints() {
         return this.entryPoints.values();
     }
 
@@ -402,21 +441,22 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     public Collection<RuleRuntimeEventListener> getRuleRuntimeEventListeners() {
-        return Collections.unmodifiableCollection( ruleRuntimeEventSupport.getEventListeners() );
+        return Collections.unmodifiableCollection(ruleRuntimeEventSupport.getEventListeners());
     }
 
     public Collection<AgendaEventListener> getAgendaEventListeners() {
-        return Collections.unmodifiableCollection( this.agendaEventSupport.getEventListeners() );
+        return Collections.unmodifiableCollection(this.agendaEventSupport.getEventListeners());
     }
 
     private InternalProcessRuntime getInternalProcessRuntime() {
         InternalProcessRuntime processRuntime = this.getProcessRuntime();
-        if ( processRuntime == null ) throw new RuntimeException( "There is no ProcessRuntime available: are jBPM libraries missing on classpath?" );
+        if (processRuntime == null)
+            throw new RuntimeException("There is no ProcessRuntime available: are jBPM libraries missing on classpath?");
         return processRuntime;
     }
 
     public void addEventListener(ProcessEventListener listener) {
-        getInternalProcessRuntime().addEventListener( listener );
+        getInternalProcessRuntime().addEventListener(listener);
     }
 
     public Collection<ProcessEventListener> getProcessEventListeners() {
@@ -424,7 +464,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
     }
 
     public void removeEventListener(ProcessEventListener listener) {
-        getInternalProcessRuntime().removeEventListener( listener );
+        getInternalProcessRuntime().removeEventListener(listener);
     }
 
     public KnowledgeBase getKieBase() {

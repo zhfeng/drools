@@ -4,6 +4,7 @@ import org.drools.beliefs.bayes.JunctionTree;
 import org.drools.core.definitions.impl.ResourceTypePackage;
 import org.kie.api.io.ResourceType;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,10 @@ public class BayesPackage implements ResourceTypePackage {
 
     public BayesPackage() {
         trees = new HashMap<String, JunctionTree>();
+    }
+
+    public Collection<String> listJunctionTrees() {
+        return trees.keySet();
     }
 
     public void addJunctionTree(String name, JunctionTree tree) {
