@@ -4,11 +4,11 @@ import org.drools.core.weaver.KieWeaverFactory;
 
 import java.util.List;
 
-public class KieAssemblerContextImpl implements KieAssemblerContext {
+public class KieAssemblerContextImpl<T extends KieAssemblerFactory> implements KieAssemblerContext<T> {
     private int index;
-    private List<KieAssemblerFactory> list;
+    private List<T> list;
 
-    public KieAssemblerContextImpl(List<KieAssemblerFactory> list) {
+    public KieAssemblerContextImpl(List<T> list) {
         this.list = list;
     }
 
@@ -22,7 +22,7 @@ public class KieAssemblerContextImpl implements KieAssemblerContext {
     }
 
     @Override
-    public List<KieAssemblerFactory> getFactories() {
+    public List<T> getFactories() {
         return list;
     }
 }

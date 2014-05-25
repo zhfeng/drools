@@ -1,17 +1,9 @@
 package org.drools.core.weaver;
 
+import org.drools.core.KieFactoryInitContext;
+
 import java.util.List;
 
-public interface KieWeaverContext {
-    /**
-     * The index position of the current KieWeaverFactory
-     * @return
-     */
-    int getIndex();
+public interface KieWeaverContext<T extends KieWeaverFactory> extends KieFactoryInitContext<T> {
 
-    /**
-     * The List is in initialization order
-     * @return
-     */
-    List<KieWeaverFactory> getFactories();
 }
