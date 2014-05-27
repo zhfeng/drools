@@ -5,12 +5,14 @@ import org.drools.beliefs.graph.GraphNode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-public class BayesInstance {
+public class BayesInstance<T> {
     private Graph<BayesVariable>       graph;
     private JunctionTree               tree;
     private Map<String, BayesVariable> variables;
@@ -24,9 +26,18 @@ public class BayesInstance {
     private GlobalUpdateListener globalUpdateListener;
     private PassMessageListener  passMessageListener;
 
-    private Class                target;
+    private int[]                targetParameterMap;
+    private Class<T>             targetClass;
+    private Constructor<T>       targetConstructor;
+
+    public BayesInstance(JunctionTree tree, Class<T> targetClass) {
+        this( tree );
+        this.targetClass = targetClass;
+        buildParameterMapping( targetClass );
+    }
 
     public BayesInstance(JunctionTree tree) {
+        tree.initialize();
         this.graph = tree.getGraph();
         this.tree = tree;
         variables = new HashMap<String, BayesVariable>();
@@ -50,27 +61,47 @@ public class BayesInstance {
         likelyhoods = new BayesLikelyhood[graph.size()];
     }
 
-    public static void x(Class target) {
+    public void setTargetClass(Class<T> targetClass) {
+        this.targetClass = targetClass;
+        buildParameterMapping( targetClass );
+    }
+
+    public  void buildParameterMapping(Class<T> target) {
         Constructor[] cons = target.getConstructors();
         if ( cons != null ) {
             for ( Constructor con : cons ) {
                 Annotation[] anns = con.getDeclaredAnnotations();
                 for ( Annotation ann : anns ) {
                     if ( ann.annotationType() == BayesVariableConstructor.class ) {
-                        System.out.println( "hello" );
                         Class[] paramTypes = con.getParameterTypes();
+
+                        targetParameterMap = new int[paramTypes.length];
                         if ( paramTypes[0] != BayesInstance.class ) {
                             throw new RuntimeException( "First Argument must be " + BayesInstance.class.getSimpleName() );
                         }
                         Annotation[][] paramAnns = con.getParameterAnnotations();
                         for ( int j = 1; j < paramAnns.length; j++ ) {
                             if ( paramAnns[j][0].annotationType() == VarName.class ) {
-                                System.out.println( ((VarName)paramAnns[j][0]).value() );
+                                String varName = ((VarName)paramAnns[j][0]).value();
+                                BayesVariable var = variables.get(varName);
+                                Object[] outcomes = new Object[ var.getOutcomes().length ];
+                                if ( paramTypes[j].isAssignableFrom( Boolean.class) || paramTypes[j].isAssignableFrom( boolean.class) ) {
+                                    for ( int k = 0; k < var.getOutcomes().length; k++ ) {
+                                        outcomes[k] = Boolean.valueOf( (String) var.getOutcomes()[k]);
+                                    }
+                                }
+                                varStates[var.getId()].setOutcomes( outcomes );
+                                targetParameterMap[j] = var.getId();
+                                System.out.println( paramTypes[j].getName() + " : " +  varName );
                             }
                         }
+                        targetConstructor = con;
                     }
                 }
             }
+        }
+        if ( targetConstructor == null ) {
+            throw new IllegalStateException( "Unable to find Constructor" );
         }
     }
 
@@ -289,16 +320,58 @@ public class BayesInstance {
         return varState;
     }
 
+    public T marginalize() {
+        Object[] args = new Object[targetParameterMap.length];
+        args[0] = this;
+        for ( int i = 1; i < targetParameterMap.length; i++) {
+            int id = targetParameterMap[i];
+            BayesVariableState varState = varStates[id];
+            marginalize(varState);
+            int highestIndex = 0;
+            double highestValue = 0;
+            int maximalCounts = 1;
+            for (int j = 0, length = varState.getDistribution().length;j < length; j++ ){
+                if ( varState.getDistribution()[j] > highestValue ) {
+                    highestValue = varState.getDistribution()[j];
+                    highestIndex = j;
+                    maximalCounts = 1;
+                }  else  if ( j != 0 && varState.getDistribution()[j] == highestValue ) {
+                    maximalCounts++;
+                }
+            }
+            if ( maximalCounts > 1 ) {
+                // have maximal conflict, so choose random one
+                int picked = new Random().nextInt( maximalCounts );
+                int count = 0;
+                for (int j = 0, length = varState.getDistribution().length;j < length; j++ ){
+                    if ( varState.getDistribution()[j] == highestValue ) {
+                        highestIndex = j;
+                        if ( ++count > picked) {
+                            break;
+                        }
+                    }
+                }
+            }
+            args[i] = varState.getOutcomes()[highestIndex];
+        }
+        try {
+            System.out.println( targetConstructor );
+            return targetConstructor.newInstance( args );
+        } catch (Exception e) {
+           throw new RuntimeException( "Unable to instantiate " + targetClass.getSimpleName() + " " + Arrays.asList( args ), e );
+        }
+    }
+
     public void marginalize(BayesVariableState varState) {
         CliqueState cliqueState = cliqueStates[varState.getVariable().getFamily()];
         JunctionTreeClique jtNode = cliqueState.getJunctionTreeClique();
         new Marginalizer(jtNode.getValues().toArray( new BayesVariable[jtNode.getValues().size()]), cliqueState.getPotentials(), varState.getVariable(), varState.getDistribution() );
-        System.out.print( varState.getVariable().getName() + " " );
-        for ( double d : varState.getDistribution() ) {
-            System.out.print(d);
-            System.out.print(" ");
-        }
-        System.out.println(" ");
+//        System.out.print( varState.getVariable().getName() + " " );
+//        for ( double d : varState.getDistribution() ) {
+//            System.out.print(d);
+//            System.out.print(" ");
+//        }
+//        System.out.println(" ");
     }
 
     public SeparatorState[] getSparatorStates() {
