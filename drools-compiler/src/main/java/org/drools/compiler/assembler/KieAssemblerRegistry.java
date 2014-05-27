@@ -1,10 +1,8 @@
-package org.drools.compiler.builder.impl;
+package org.drools.compiler.assembler;
 
 import java.util.List;
 
 
-import org.drools.compiler.assembler.KieAssemblerContext;
-import org.drools.compiler.assembler.KieAssemblerFactory;
 import org.drools.core.util.BaseFactoryRegistry;
 
 public class KieAssemblerRegistry extends BaseFactoryRegistry<KieAssemblerFactory, KieAssemblerContext> {

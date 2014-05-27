@@ -3,6 +3,7 @@ package org.drools.beliefs.bayes;
 public class BayesVariableState {
     private BayesVariable variable;
     private double[]      distribution;
+    private Object[]      outcomes;
 
     public BayesVariableState(BayesVariable variable, double[] distribution) {
         this.variable = variable;
@@ -15,5 +16,13 @@ public class BayesVariableState {
 
     public double[] getDistribution() {
         return distribution;
+    }
+
+    public Object[] getOutcomes() {
+        return outcomes;
+    }
+
+    public void setOutcomes(Object[] outcomes) {
+        this.outcomes = outcomes;
     }
 }

@@ -2,6 +2,7 @@ package org.drools.compiler.builder.impl;
 
 import org.drools.compiler.assembler.KieAssembler;
 import org.drools.compiler.assembler.KieAssemblerFactory;
+import org.drools.compiler.assembler.KieAssemblerRegistry;
 import org.drools.compiler.compiler.BPMN2ProcessFactory;
 import org.drools.compiler.compiler.BaseKnowledgeBuilderResultImpl;
 import org.drools.compiler.compiler.ConfigurableSeverityResult;
