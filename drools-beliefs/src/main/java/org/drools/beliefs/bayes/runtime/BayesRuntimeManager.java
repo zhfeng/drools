@@ -24,33 +24,31 @@ public class BayesRuntimeManager implements KieRuntimeManager {
         this.instances = new HashMap<String, BayesInstance>();
     }
 
-    public BayesInstance getInstance(String pkgName, String bayesName) {
+    public BayesInstance getInstance(Class cls) {
         // using the two-tone pattern, to ensure only one is created
-
-        String key  = pkgName + "." + bayesName;
-        BayesInstance instance = instances.get( key);
+        BayesInstance instance = instances.get( cls.getName() );
         if ( instance == null ) {
-            instance = createInstance(key, pkgName,  bayesName);
+            instance = createInstance(cls);
         }
 
         return instance;
     }
 
-    private synchronized  BayesInstance createInstance(String key, String pkgName, String bayesName) {
+    private synchronized  BayesInstance createInstance(Class cls) {
         // synchronised using the two-tone pattern, to ensure only one is created
-        BayesInstance instance = instances.get( key);
+        BayesInstance instance = instances.get( cls.getName() );
         if ( instance != null ) {
             return instance;
         }
 
 
-        InternalKnowledgePackage kpkg = (InternalKnowledgePackage) runtime.getKieBase().getKiePackage( pkgName );
+        InternalKnowledgePackage kpkg = (InternalKnowledgePackage) runtime.getKieBase().getKiePackage( cls.getPackage().getName() );
         Map<ResourceType, ResourceTypePackage> map = kpkg.getResourceTypePackages();
         BayesPackage bayesPkg  = (BayesPackage) map.get( ResourceType.BAYES );
-        JunctionTree jtree =  bayesPkg.getJunctionTree(bayesName);
+        JunctionTree jtree =  bayesPkg.getJunctionTree(cls.getSimpleName());
 
-        instance = new BayesInstance( jtree );
-        instances.put( key , instance );
+        instance = new BayesInstance( jtree, cls );
+        instances.put( cls.getName() , instance );
 
         return instance;
     }

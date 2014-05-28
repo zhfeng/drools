@@ -55,7 +55,6 @@ public class GlobalUpdateTest {
         connectChildren(graph, n6, list, n7, n8);
 
         tree = new JunctionTree(graph, n0, new JunctionTreeClique[]{n0, n1, n2, n3, n4, n5, n6, n7, n8}, list.toArray(new JunctionTreeSeparator[list.size()]));
-        tree.initialize();
 
         bayesInstance = new BayesInstance(tree);
 

@@ -784,7 +784,7 @@ public class JunctionTreeBuilderTest {
         list.add(OpenBitSet3);
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique jtNode = jtBuilder.junctionTree(list).getRoot();
+        JunctionTreeClique jtNode = jtBuilder.junctionTree(list, false).getRoot();
 
 
         assertEquals( OpenBitSet1, jtNode.getBitSet() );
@@ -832,7 +832,7 @@ public class JunctionTreeBuilderTest {
         list.add(OpenBitSet3);
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique jtNode = jtBuilder.junctionTree(list).getRoot();
+        JunctionTreeClique jtNode = jtBuilder.junctionTree(list, false).getRoot();
 
 
         assertEquals( OpenBitSet1, jtNode.getBitSet() );
@@ -882,7 +882,7 @@ public class JunctionTreeBuilderTest {
         list.add(OpenBitSet4);
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique jtNode = jtBuilder.junctionTree(list).getRoot();
+        JunctionTreeClique jtNode = jtBuilder.junctionTree(list, false).getRoot();
         JunctionTreeClique root = jtNode;
 
 
@@ -945,7 +945,7 @@ public class JunctionTreeBuilderTest {
         list.add(OpenBitSet4);
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique jtNode = jtBuilder.junctionTree(list).getRoot();;
+        JunctionTreeClique jtNode = jtBuilder.junctionTree(list, false).getRoot();;
         JunctionTreeClique root = jtNode;
 
         assertEquals( OpenBitSet1, root.getBitSet() );
@@ -1090,7 +1090,7 @@ public class JunctionTreeBuilderTest {
 
         // clique1
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique root = jtBuilder.build().getRoot();
+        JunctionTreeClique root = jtBuilder.build(false).getRoot();
         assertEquals( clique1, root.getBitSet() );
         assertEquals(1, root.getChildren().size());
 
@@ -1193,7 +1193,7 @@ public class JunctionTreeBuilderTest {
                                                        new String[]{"Up", "Down", "Crash"}, new double[][]{{0.433, 0.386, 0.179}}));
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
-        JunctionTreeClique root = jtBuilder.build().getRoot();
+        JunctionTreeClique root = jtBuilder.build(false).getRoot();
 
         // clique1
         assertEquals( clique1, root.getBitSet() );

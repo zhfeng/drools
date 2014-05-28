@@ -208,7 +208,6 @@ public class JunctionTreeTest {
         d.setFamily( node2.getId() );
 
         JunctionTree jtree = new JunctionTree(graph, node1, new JunctionTreeClique[] { node1, node2 }, null );
-        jtree.initialize();
 
         assertArray(new double[]{0.1, 0.2, 0.1, 0.2}, scaleDouble( 3, node1.getPotentials() ));
         assertArray(new double[]{0.01, 0.02, 0.06, 0.08}, scaleDouble( 3, node2.getPotentials() ));

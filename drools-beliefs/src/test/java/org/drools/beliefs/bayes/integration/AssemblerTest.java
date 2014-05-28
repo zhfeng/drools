@@ -14,10 +14,10 @@ public class AssemblerTest {
     @Test
     public void testBayesPackageAssembly() throws Exception {
         KnowledgeBuilderImpl kbuilder = new KnowledgeBuilderImpl();
-        kbuilder.add( ResourceFactory.newClassPathResource("Sprinkler.xmlbif", AssemblerTest.class), ResourceType.BAYES );
+        kbuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
 
-        InternalKnowledgePackage kpkg = kbuilder.getPackageRegistry("bayes").getPackage();
+        InternalKnowledgePackage kpkg = kbuilder.getPackageRegistry("org.drools.beliefs.bayes.integration").getPackage();
         BayesPackage bkpg = (BayesPackage) kpkg.getResourceTypePackages().get( ResourceType.BAYES );
-        assertNotNull(bkpg.getJunctionTree("Sprinkler"));
+        assertNotNull(bkpg.getJunctionTree("Garden"));
     }
 }

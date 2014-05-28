@@ -37,7 +37,6 @@ public class BayesInstance<T> {
     }
 
     public BayesInstance(JunctionTree tree) {
-        tree.initialize();
         this.graph = tree.getGraph();
         this.tree = tree;
         variables = new HashMap<String, BayesVariable>();

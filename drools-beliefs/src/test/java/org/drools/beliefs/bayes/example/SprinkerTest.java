@@ -50,8 +50,6 @@ public class SprinkerTest {
 
     @Test
     public void testInitialize() {
-        jTree.initialize();
-
         JunctionTreeClique jtNode = jTree.getRoot();
 
         // cloud, rain sprinkler
@@ -66,7 +64,6 @@ public class SprinkerTest {
     public void testNoEvidence() {
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder( graph );
         JunctionTree jTree = jtBuilder.build();
-        jTree.initialize();
 
         JunctionTreeClique jtNode = jTree.getRoot();
         BayesInstance bayesInstance = new BayesInstance(jTree);
