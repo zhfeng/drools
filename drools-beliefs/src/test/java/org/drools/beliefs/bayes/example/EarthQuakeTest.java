@@ -60,7 +60,7 @@ public class EarthQuakeTest {
 
         JunctionTreeBuilder jtBuilder = new JunctionTreeBuilder(graph);
         jTree = jtBuilder.build();
-        jTree.initialize();
+        //jTree.initialize();
 
         jtNode1 = jTree.getRoot();
         jtNode2 = jtNode1.getChildren().get(0).getChild();

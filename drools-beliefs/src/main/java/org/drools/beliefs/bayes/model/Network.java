@@ -10,6 +10,9 @@ public class Network {
     @XStreamAlias("NAME")
     private String name;
 
+    @XStreamImplicit(itemFieldName = "PROPERTY")
+    private List<String> properties;
+
     @XStreamImplicit(itemFieldName = "VARIABLE")
     private List<Variable> variables;
 
@@ -38,5 +41,13 @@ public class Network {
 
     public void setDefinitions(List<Definition> definitions) {
         this.definitions = definitions;
+    }
+
+    public List<String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<String> properties) {
+        this.properties = properties;
     }
 }

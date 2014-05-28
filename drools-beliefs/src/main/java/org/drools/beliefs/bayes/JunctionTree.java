@@ -12,10 +12,17 @@ public class JunctionTree {
     private JunctionTreeSeparator[] jtSeps;
 
     public JunctionTree(Graph<BayesVariable> graph, JunctionTreeClique root, JunctionTreeClique[] jtNodes, JunctionTreeSeparator[] jtSeps) {
+        this( graph, root, jtNodes, jtSeps, true );
+    }
+
+    public JunctionTree(Graph<BayesVariable> graph, JunctionTreeClique root, JunctionTreeClique[] jtNodes, JunctionTreeSeparator[] jtSeps, boolean init) {
         this.graph = graph;
         this.root = root;
         this.jtNodes = jtNodes;
         this.jtSeps = jtSeps;
+        if ( init ) {
+            initialize();
+        }
     }
 
     public Graph<BayesVariable> getGraph() {
@@ -26,7 +33,7 @@ public class JunctionTree {
         return root;
     }
 
-    public void initialize() {
+    private void initialize() {
         recurseJTNodesAndInitialisePotentials( graph, root );
     }
 

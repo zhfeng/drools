@@ -23,16 +23,16 @@ public class WeaverTest {
     @Test
     public void testBayesPackageWeaving() throws Exception {
         KnowledgeBuilderImpl kbuilder = new KnowledgeBuilderImpl();
-        kbuilder.add( ResourceFactory.newClassPathResource("Sprinkler.xmlbif", AssemblerTest.class), ResourceType.BAYES );
+        kbuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
 
 
         KnowledgeBase kbase = getKnowledgeBase();
         kbase.addKnowledgePackages( kbuilder.getKnowledgePackages() );
 
-        InternalKnowledgePackage kpkg = (InternalKnowledgePackage) kbase.getKiePackage("bayes");
+        InternalKnowledgePackage kpkg = (InternalKnowledgePackage) kbase.getKiePackage("org.drools.beliefs.bayes.integration");
         Map<ResourceType, ResourceTypePackage> map = kpkg.getResourceTypePackages();
         BayesPackage existing  = (BayesPackage) map.get( ResourceType.BAYES );
-        JunctionTree jtree =  existing.getJunctionTree("Sprinkler");
+        JunctionTree jtree =  existing.getJunctionTree("Garden");
         assertNotNull( jtree );
     }
 

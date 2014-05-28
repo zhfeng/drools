@@ -25,9 +25,10 @@ public class ParserTest {
     @Test
     public void testSprinklerLoadBif() {
 
-        Bif bif = (Bif) XmlBifParser.loadBif(ParserTest.class.getResource("Sprinkler.xmlbif"));
+        Bif bif = (Bif) XmlBifParser.loadBif(ParserTest.class.getResource("Garden.xmlbif"));
         Network network = bif.getNetwork();
-        assertEquals( "Sprinkler", network.getName() );
+        assertEquals( "Garden", network.getName() );
+        assertEquals( "package = org.drools.beliefs.bayes.integration", network.getProperties().get(0) );
 
         Map<String, Variable> varMap = varToMap( network.getVariables() );
         assertEquals(4, varMap.size());
@@ -36,25 +37,25 @@ public class ParserTest {
         assertEquals("WetGrass", var.getName());
         assertEquals(2, var.getOutComes().size());
         assertEquals(var.getOutComes(), Arrays.asList(new String[]{"false", "true"}));
-        assertEquals("position = (0,10)", var.getPosition());
+        assertEquals("position = (0,10)", var.getProperties().get(0));
 
         var = varMap.get("Cloudy");
         assertEquals( "Cloudy", var.getName());
         assertEquals(2, var.getOutComes().size());
         assertEquals(var.getOutComes(), Arrays.asList(new String[]{"false", "true"}));
-        assertEquals( "position = (0,-10)", var.getPosition() );
+        assertEquals( "position = (0,-10)", var.getProperties().get(0) );
 
         var = varMap.get("Sprinkler");
         assertEquals( "Sprinkler", var.getName());
         assertEquals( 2, var.getOutComes().size() );
         assertEquals(var.getOutComes(), Arrays.asList(new String[]{"false", "true"}));
-        assertEquals("position = (13,0)", var.getPosition());
+        assertEquals("position = (13,0)", var.getProperties().get(0) );
 
         var = varMap.get("Rain");
         assertEquals( "Rain", var.getName());
         assertEquals( 2, var.getOutComes().size() );
         assertEquals(var.getOutComes(), Arrays.asList(new String[]{"false", "true"}));
-        assertEquals("position = (-12,0)", var.getPosition());
+        assertEquals("position = (-12,0)", var.getProperties().get(0) );
 
         Map<String, Definition> defMap = defToMap( network.getDefinitions() );
         assertEquals( 4, defMap.size() );
@@ -84,7 +85,7 @@ public class ParserTest {
 
     @Test
     public void testSprinklerBuildBayesNework() {
-        Bif bif = (Bif) XmlBifParser.loadBif(ParserTest.class.getResource("Sprinkler.xmlbif"));
+        Bif bif = (Bif) XmlBifParser.loadBif(ParserTest.class.getResource("Garden.xmlbif"));
 
         BayesNetwork network = XmlBifParser.buildBayesNetwork( bif );
         Map<String, GraphNode<BayesVariable>> map = nodeToMap(network);

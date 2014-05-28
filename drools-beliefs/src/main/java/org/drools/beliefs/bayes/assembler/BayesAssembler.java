@@ -48,9 +48,9 @@ public class BayesAssembler implements KieAssembler {
             return;
         }
 
-        PackageRegistry pkgReg = kbuilder.getPackageRegistry("bayes");
+        PackageRegistry pkgReg = kbuilder.getPackageRegistry( network.getPackageName() );
         if ( pkgReg == null ) {
-            pkgReg = kbuilder.newPackage( new PackageDescr( "bayes" ) );
+            pkgReg = kbuilder.newPackage( new PackageDescr( network.getPackageName() ) );
         }
 
         InternalKnowledgePackage kpkgs = pkgReg.getPackage();

@@ -29,7 +29,7 @@ public class RuntimeManagerTest {
     @Test
     public void testBayesRuntimeManager() throws Exception {
         KnowledgeBuilderImpl kbuilder = new KnowledgeBuilderImpl();
-        kbuilder.add( ResourceFactory.newClassPathResource("Sprinkler.xmlbif", AssemblerTest.class), ResourceType.BAYES );
+        kbuilder.add( ResourceFactory.newClassPathResource("Garden.xmlbif", AssemblerTest.class), ResourceType.BAYES );
 
 
         KnowledgeBase kbase = getKnowledgeBase();
@@ -38,10 +38,9 @@ public class RuntimeManagerTest {
         StatefulKnowledgeSessionImpl ksession = (StatefulKnowledgeSessionImpl) kbase.newStatefulKnowledgeSession();
 
         BayesRuntimeManager bruntimeManager = ( BayesRuntimeManager ) ksession.getKieRuntimeManager(ResourceType.BAYES);
-        BayesInstance<Garden> instance = bruntimeManager.getInstance("bayes", "Sprinkler");
+        BayesInstance<Garden> instance = bruntimeManager.getInstance( Garden.class );
         assertNotNull(  instance );
 
-        instance.setTargetClass( Garden.class );
         instance.globalUpdate();
 
         Garden garden = instance.marginalize();

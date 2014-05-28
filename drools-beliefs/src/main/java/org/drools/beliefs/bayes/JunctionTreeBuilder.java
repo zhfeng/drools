@@ -17,6 +17,10 @@ public class JunctionTreeBuilder {
     private Graph<BayesVariable> graph;
     private boolean[][]          adjacencyMatrix;
 
+    public Graph<BayesVariable> getGraph() {
+        return graph;
+    }
+
     public JunctionTreeBuilder(Graph<BayesVariable> graph) {
         this.graph = graph;
         adjacencyMatrix = new boolean[graph.size()][graph.size()];
@@ -28,11 +32,14 @@ public class JunctionTreeBuilder {
             }
         }
     }
-
     public JunctionTree build() {
+        return build( true );
+    }
+
+    public JunctionTree build(boolean init) {
         moralize();
         List<OpenBitSet>  cliques = triangulate();
-        return junctionTree(cliques);
+        return junctionTree(cliques, init);
     }
 
 
@@ -190,7 +197,7 @@ public class JunctionTreeBuilder {
         return target;
     }
 
-    public JunctionTree junctionTree(List<OpenBitSet> cliques) {
+    public JunctionTree junctionTree(List<OpenBitSet> cliques, boolean init) {
         List<SeparatorSet> list = new ArrayList<SeparatorSet>();
         for ( int i = 0; i < cliques.size(); i++ ) {
             for ( int j = i+1; j < cliques.size(); j++ ) {
@@ -236,7 +243,7 @@ public class JunctionTreeBuilder {
 
         mapNodeToCliqueFamily(varNodeToCliques, jtNodes);
 
-        return new JunctionTree(graph, jtNodes[0], jtNodes, jtSeps);
+        return new JunctionTree(graph, jtNodes[0], jtNodes, jtSeps, init);
     }
 
 

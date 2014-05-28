@@ -15,8 +15,8 @@ public class Variable extends VariableXml implements Serializable {
     @XStreamImplicit(itemFieldName = "OUTCOME")
     private List<String> outComes;
 
-    @XStreamAlias("PROPERTY")
-    private String position;
+    @XStreamImplicit(itemFieldName = "PROPERTY")
+    private List<String> properties;
 
     public String getName() {
         return name;
@@ -34,13 +34,12 @@ public class Variable extends VariableXml implements Serializable {
         this.outComes = outComes;
     }
 
-    public String getPosition() {
-        return position;
+    public List<String> getProperties() {
+        return properties;
     }
 
-    public void setPosition(String position) {
-        this.position = position;
+    public void setProperties(List<String> properties) {
+        this.properties = properties;
     }
-
 }
 

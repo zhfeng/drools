@@ -1,6 +1,7 @@
 <BIF VERSION="0.3">
 <NETWORK>
-    <NAME>Sprinkler</NAME>
+    <NAME>Garden</NAME>
+    <PROPERTY>package = org.drools.beliefs.bayes.integration</PROPERTY>
         <VARIABLE TYPE="nature">
             <NAME>WetGrass</NAME>
             <OUTCOME>false</OUTCOME>
