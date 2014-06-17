@@ -1,15 +1,10 @@
 package org.drools.beliefs.bayes.integration;
 
 import org.drools.beliefs.bayes.BayesInstance;
-import org.drools.beliefs.bayes.JunctionTree;
-import org.drools.beliefs.bayes.assembler.BayesPackage;
-import org.drools.beliefs.bayes.runtime.BayesRuntimeManager;
+import org.drools.beliefs.bayes.runtime.BayesRuntime;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
-import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.definitions.impl.ResourceTypePackage;
 import org.drools.core.impl.StatefulKnowledgeSessionImpl;
 import org.junit.Test;
-import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.io.ResourceType;
 import org.kie.internal.KnowledgeBase;
@@ -17,13 +12,10 @@ import org.kie.internal.KnowledgeBaseFactory;
 import org.kie.internal.builder.conf.RuleEngineOption;
 import org.kie.internal.io.ResourceFactory;
 
-import java.util.Map;
-
-import static org.drools.beliefs.bayes.JunctionTreeTest.assertArray;
 import static org.drools.beliefs.bayes.JunctionTreeTest.scaleDouble;
 import static org.junit.Assert.assertNotNull;
 
-public class RuntimeManagerTest {
+public class BayesRuntimeTest {
 
 
     @Test
@@ -37,8 +29,8 @@ public class RuntimeManagerTest {
 
         StatefulKnowledgeSessionImpl ksession = (StatefulKnowledgeSessionImpl) kbase.newStatefulKnowledgeSession();
 
-        BayesRuntimeManager bruntimeManager = ( BayesRuntimeManager ) ksession.getKieRuntimeManager(ResourceType.BAYES);
-        BayesInstance<Garden> instance = bruntimeManager.getInstance( Garden.class );
+        BayesRuntime bayesRuntime = (BayesRuntime) ksession.getKieRuntime(BayesRuntime.class);
+        BayesInstance<Garden> instance = bayesRuntime.getInstance( Garden.class );
         assertNotNull(  instance );
 
         instance.globalUpdate();

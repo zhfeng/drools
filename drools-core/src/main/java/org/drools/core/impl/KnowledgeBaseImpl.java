@@ -16,11 +16,8 @@
 
 package org.drools.core.impl;
 
-import org.drools.core.definitions.impl.ResourceTypePackage;
+import org.kie.internal.io.ResourceTypePackage;
 import org.drools.core.event.KieBaseEventSupport;
-import org.drools.core.weaver.KieWeaver;
-import org.drools.core.weaver.KieWeaverFactory;
-import org.drools.core.weaver.KieWeaverRegistry;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.rule.FactHandle;
 import org.drools.core.RuleBaseConfiguration;
@@ -81,6 +78,9 @@ import org.kie.api.runtime.Environment;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.StatelessKieSession;
+import org.kie.internal.utils.ServiceRegistryImpl;
+import org.kie.internal.weaver.KieWeaverService;
+import org.kie.internal.weaver.KieWeavers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -853,11 +853,11 @@ public class KnowledgeBaseImpl
                 }
 
                 if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
+                    KieWeavers weavers = ServiceRegistryImpl.getInstance().get(KieWeavers.class);
                     for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
                         ResourceType rt = rtkKpg.getResourceType();
-                        KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
-                        KieWeaver weaver = factory.newKieWeaver(this);
-                        weaver.weave( newPkg, rtkKpg );
+                        KieWeaverService factory = weavers.getWeavers().get( rt );
+                        factory.weave( this, newPkg, rtkKpg );
                     }
                 }
 
@@ -1145,9 +1145,10 @@ public class KnowledgeBaseImpl
         if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
             for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
                 ResourceType rt = rtkKpg.getResourceType();
-                KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
-                KieWeaver weaver = factory.newKieWeaver(this);
-                weaver.merge( pkg, rtkKpg );
+                KieWeavers weavers = ServiceRegistryImpl.getInstance().get(KieWeavers.class);
+
+                KieWeaverService weaver = weavers.getWeavers().get(rt);
+                weaver.merge( this, pkg, rtkKpg );
             }
         }
     }

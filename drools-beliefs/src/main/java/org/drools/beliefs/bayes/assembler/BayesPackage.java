@@ -1,7 +1,7 @@
 package org.drools.beliefs.bayes.assembler;
 
 import org.drools.beliefs.bayes.JunctionTree;
-import org.drools.core.definitions.impl.ResourceTypePackage;
+import org.kie.internal.io.ResourceTypePackage;
 import org.kie.api.io.ResourceType;
 
 import java.util.Collection;

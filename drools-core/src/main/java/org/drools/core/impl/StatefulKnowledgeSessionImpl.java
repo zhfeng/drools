@@ -82,9 +82,6 @@ import org.drools.core.reteoo.SegmentMemory;
 import org.drools.core.reteoo.TerminalNode;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.EntryPointId;
-import org.drools.core.runtime.KieRuntimeManager;
-import org.drools.core.runtime.KieRuntimeManagerFactory;
-import org.drools.core.runtime.KieRuntimeManagerRegistry;
 import org.drools.core.runtime.impl.ExecutionResultImpl;
 import org.drools.core.runtime.process.InternalProcessRuntime;
 import org.drools.core.runtime.process.ProcessRuntimeFactory;
@@ -108,7 +105,6 @@ import org.kie.api.event.process.ProcessEventListener;
 import org.kie.api.event.process.ProcessEventManager;
 import org.kie.api.event.rule.AgendaEventListener;
 import org.kie.api.event.rule.RuleRuntimeEventListener;
-import org.kie.api.io.ResourceType;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
 import org.kie.api.marshalling.ObjectMarshallingStrategyStore;
@@ -135,7 +131,10 @@ import org.kie.internal.event.rule.RuleEventListener;
 import org.kie.internal.marshalling.MarshallerFactory;
 import org.kie.internal.process.CorrelationAwareProcessRuntime;
 import org.kie.internal.process.CorrelationKey;
+import org.kie.internal.runtime.KieRuntimeService;
+import org.kie.internal.runtime.KieRuntimes;
 import org.kie.internal.runtime.StatefulKnowledgeSession;
+import org.kie.internal.utils.ServiceRegistryImpl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
@@ -251,7 +250,7 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
 
     private InternalProcessRuntime processRuntime;
 
-    private Map<ResourceType, KieRuntimeManager> runtimeManagers;
+    private Map<String, Object> runtimeServices;
 
     private transient ObjectMarshallingStrategyStore marshallingStore;
     private transient List                           ruleBaseListeners;
@@ -394,38 +393,40 @@ public class StatefulKnowledgeSessionImpl extends AbstractRuntime
             initInitialFact(kBase, null);
         }
 
-        //runtimeManagers = new HashMap<ResourceType, KieRuntimeManager>();
+        //runtimeServices = new HashMap<ResourceType, KieRuntimeManager>();
     }
 
-    public KieRuntimeManager getKieRuntimeManager(ResourceType type){
+    public <T> T getKieRuntime(Class<T> cls) {
         //  Only ever one KieRuntimeManager is created, using the two-tone pattern.
 
-        KieRuntimeManager kruntimeManager;
-        if ( runtimeManagers == null ) {
-            kruntimeManager =  createRuntimeManager( type );
+        T runtime;
+        if (runtimeServices == null) {
+            runtime = createRuntimeService(cls);
         } else {
-            kruntimeManager = runtimeManagers.get(type);
-            if (kruntimeManager == null) {
-                kruntimeManager =  createRuntimeManager( type );
+            runtime = (T) runtimeServices.get(cls.getName());
+            if (runtime == null) {
+                runtime = createRuntimeService(cls);
             }
         }
 
-        return kruntimeManager;
+        return (T) runtime;
     }
 
-    public synchronized KieRuntimeManager createRuntimeManager(ResourceType type) {
+    public synchronized <T> T createRuntimeService(Class<T> cls) {
         // This is sychronized to ensure that only ever one is created, using the two-tone pattern.
-        if ( runtimeManagers == null ) {
-            runtimeManagers = new HashMap<ResourceType, KieRuntimeManager>();
+        if (runtimeServices == null) {
+            runtimeServices = new HashMap<String, Object>();
         }
 
-        KieRuntimeManager kruntimeManager = runtimeManagers.get(type);
-        if (kruntimeManager == null) {
-            KieRuntimeManagerFactory<KieRuntimeManager> factory = KieRuntimeManagerRegistry.getInstance().getFactory(type);
-            kruntimeManager = factory.newKieRuntime( this );
+        T runtime = (T) runtimeServices.get(cls.getName());
+        if (runtime == null) {
+            KieRuntimes runtimes = ServiceRegistryImpl.getInstance().get(KieRuntimes.class);
+
+            KieRuntimeService service = (KieRuntimeService) runtimes.getRuntimes().get(cls.getName());
+            runtime  = (T) service.newKieRuntime(this);
         }
 
-        return kruntimeManager;
+        return (T) runtime;
     }
 
     public EntryPoint getEntryPoint(String name) {

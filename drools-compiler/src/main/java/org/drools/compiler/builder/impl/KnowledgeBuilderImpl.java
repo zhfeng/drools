@@ -1,8 +1,5 @@
 package org.drools.compiler.builder.impl;
 
-import org.drools.compiler.assembler.KieAssembler;
-import org.drools.compiler.assembler.KieAssemblerFactory;
-import org.drools.compiler.assembler.KieAssemblerRegistry;
 import org.drools.compiler.compiler.BPMN2ProcessFactory;
 import org.drools.compiler.compiler.BaseKnowledgeBuilderResultImpl;
 import org.drools.compiler.compiler.ConfigurableSeverityResult;
@@ -84,6 +81,9 @@ import org.kie.api.runtime.rule.AccumulateFunction;
 import org.kie.internal.ChangeSet;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.KnowledgeBaseFactory;
+import org.kie.internal.assembler.KieAssembler;
+import org.kie.internal.assembler.KieAssemblerService;
+import org.kie.internal.assembler.KieAssemblers;
 import org.kie.internal.builder.CompositeKnowledgeBuilder;
 import org.kie.internal.builder.DecisionTableConfiguration;
 import org.kie.internal.builder.KnowledgeBuilder;
@@ -94,6 +94,7 @@ import org.kie.internal.builder.KnowledgeBuilderResults;
 import org.kie.internal.builder.ResultSeverity;
 import org.kie.internal.builder.ScoreCardConfiguration;
 import org.kie.internal.definition.KnowledgePackage;
+import org.kie.internal.utils.ServiceRegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -648,12 +649,16 @@ public class KnowledgeBuilderImpl implements KnowledgeBuilder {
     void addPackageForExternalType(Resource resource,
                                    ResourceType type,
                                    ResourceConfiguration configuration) throws Exception {
-        KieAssemblerFactory factory = KieAssemblerRegistry.getInstance().getFactory(type);
-        KieAssembler builder = factory.newKieAssembler(this);
-        if (builder != null) {
-            builder.addResource(resource,
-                                type,
-                                configuration);
+        KieAssemblers assemblers = ServiceRegistryImpl.getInstance().get(KieAssemblers.class);
+
+        KieAssemblerService assembler = assemblers.getAssemblers().get(type);
+
+
+        if (assembler != null) {
+            assembler.addResource(this,
+                                  resource,
+                                  type,
+                                  configuration);
         } else {
             throw new RuntimeException("Unknown resource type: " + type);
         }

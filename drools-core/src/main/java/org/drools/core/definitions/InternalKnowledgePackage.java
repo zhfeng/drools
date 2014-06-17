@@ -3,7 +3,7 @@ package org.drools.core.definitions;
 import org.drools.core.base.ClassFieldAccessorCache;
 import org.drools.core.base.ClassFieldAccessorStore;
 import org.drools.core.base.TypeResolver;
-import org.drools.core.definitions.impl.ResourceTypePackage;
+import org.kie.internal.io.ResourceTypePackage;
 import org.drools.core.definitions.rule.impl.RuleImpl;
 import org.drools.core.factmodel.traits.TraitRegistry;
 import org.drools.core.facttemplates.FactTemplate;
@@ -20,7 +20,6 @@ import org.kie.api.runtime.rule.AccumulateFunction;
 import org.kie.internal.definition.KnowledgePackage;
 
 import java.io.Externalizable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

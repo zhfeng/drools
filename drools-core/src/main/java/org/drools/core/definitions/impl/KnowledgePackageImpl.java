@@ -62,6 +62,7 @@ import org.kie.api.definition.rule.Global;
 import org.kie.api.definition.rule.Query;
 import org.kie.api.definition.rule.Rule;
 import org.kie.api.definition.type.FactType;
+import org.kie.internal.io.ResourceTypePackage;
 
 public class KnowledgePackageImpl
     implements
