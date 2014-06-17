@@ -2,12 +2,12 @@ package org.drools.beliefs.bayes.weaver;
 
 import org.drools.beliefs.bayes.assembler.BayesPackage;
 import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.definitions.impl.ResourceTypePackage;
+import org.kie.internal.io.ResourceTypePackage;
 import org.drools.core.impl.InternalKnowledgeBase;
-import org.drools.core.weaver.KieWeaver;
-import org.kie.api.KieBase;
+//import org.drools.core.weaver.KieWeaver;
 import org.kie.api.definition.KiePackage;
 import org.kie.api.io.ResourceType;
+import org.kie.internal.weaver.KieWeaver;
 
 import java.util.Map;
 

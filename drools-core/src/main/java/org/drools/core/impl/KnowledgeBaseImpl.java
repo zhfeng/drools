@@ -16,11 +16,8 @@
 
 package org.drools.core.impl;
 
-import org.drools.core.definitions.impl.ResourceTypePackage;
+import org.kie.internal.io.ResourceTypePackage;
 import org.drools.core.event.KieBaseEventSupport;
-import org.drools.core.weaver.KieWeaver;
-import org.drools.core.weaver.KieWeaverFactory;
-import org.drools.core.weaver.KieWeaverRegistry;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.rule.FactHandle;
 import org.drools.core.RuleBaseConfiguration;
@@ -39,24 +36,6 @@ import org.drools.core.common.WorkingMemoryFactory;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.definitions.impl.KnowledgePackageImpl;
 import org.drools.core.definitions.rule.impl.RuleImpl;
-import org.drools.core.event.knowlegebase.impl.AfterFunctionRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterKiePackageAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterKiePackageRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterKnowledgeBaseLockedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterKnowledgeBaseUnlockedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterProcessAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterProcessRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterRuleAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.AfterRuleRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeFunctionRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeKiePackageAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeKiePackageRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeKnowledgeBaseLockedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeKnowledgeBaseUnlockedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeProcessAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeProcessRemovedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeRuleAddedEventImpl;
-import org.drools.core.event.knowlegebase.impl.BeforeRuleRemovedEventImpl;
 import org.drools.core.factmodel.ClassDefinition;
 import org.drools.core.factmodel.traits.TraitRegistry;
 import org.drools.core.management.DroolsManagementAgent;
@@ -85,7 +64,6 @@ import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.io.Resource;
 import org.kie.api.marshalling.Marshaller;
 import org.kie.api.marshalling.ObjectMarshallingStrategy;
-import org.kie.internal.KnowledgeBase;
 import org.kie.api.definition.KiePackage;
 import org.kie.internal.definition.KnowledgePackage;
 import org.kie.api.definition.process.Process;
@@ -100,6 +78,9 @@ import org.kie.api.runtime.Environment;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.api.runtime.StatelessKieSession;
+import org.kie.internal.utils.ServiceRegistryImpl;
+import org.kie.internal.weaver.KieWeaverService;
+import org.kie.internal.weaver.KieWeavers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -870,11 +851,11 @@ public class KnowledgeBaseImpl
                 }
 
                 if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
+                    KieWeavers weavers = ServiceRegistryImpl.getInstance().get(KieWeavers.class);
                     for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
                         ResourceType rt = rtkKpg.getResourceType();
-                        KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
-                        KieWeaver weaver = factory.newKieWeaver(this);
-                        weaver.weave( newPkg, rtkKpg );
+                        KieWeaverService factory = weavers.getWeavers().get( rt );
+                        factory.weave( this, newPkg, rtkKpg );
                     }
                 }
 
@@ -1125,9 +1106,10 @@ public class KnowledgeBaseImpl
         if ( ! newPkg.getResourceTypePackages().isEmpty() ) {
             for ( ResourceTypePackage rtkKpg : newPkg.getResourceTypePackages().values() ) {
                 ResourceType rt = rtkKpg.getResourceType();
-                KieWeaverFactory factory = KieWeaverRegistry.getInstance().getFactory( rt );
-                KieWeaver weaver = factory.newKieWeaver(this);
-                weaver.merge( pkg, rtkKpg );
+                KieWeavers weavers = ServiceRegistryImpl.getInstance().get(KieWeavers.class);
+
+                KieWeaverService weaver = weavers.getWeavers().get(rt);
+                weaver.merge( this, pkg, rtkKpg );
             }
         }
     }

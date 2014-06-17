@@ -1,32 +1,75 @@
 package org.drools.beliefs.bayes.assembler;
 
+//import org.drools.compiler.assembler.KieAssembler;
+//import org.drools.compiler.assembler.KieAssemblerContext;
+//import org.drools.compiler.assembler.KieAssemblerFactory;
 import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.JunctionTreeBuilder;
 import org.drools.beliefs.bayes.model.Bif;
 import org.drools.beliefs.bayes.model.XmlBifParser;
-//import org.drools.compiler.assembler.KieAssembler;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.compiler.PackageRegistry;
 import org.drools.compiler.lang.descr.PackageDescr;
+import org.drools.core.KieFactoryInitContext;
 import org.drools.core.definitions.InternalKnowledgePackage;
-import org.kie.internal.assembler.KieAssembler;
-import org.kie.internal.io.ResourceTypePackage;
+import org.drools.core.weaver.RequiredResourceType;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
+import org.kie.internal.assembler.KieAssemblerService;
 import org.kie.internal.builder.KnowledgeBuilder;
+import org.kie.internal.io.ResourceTypePackage;
 
 import java.util.Map;
 
-public class BayesAssembler implements KieAssembler {
-    private KnowledgeBuilderImpl kbuilder;
+public class BayesAssemblerService implements KieAssemblerService<BayesAssembler> {
 
-    public BayesAssembler(KnowledgeBuilder kbuilder) {
-        this.kbuilder = (KnowledgeBuilderImpl) kbuilder;
+    public BayesAssemblerService() {
+    }
+
+//    @Override
+//    public void preInit(KieAssemblerContext ctx) {
+//
+//    }
+//
+//    @Override
+//    public void init(KieAssemblerContext ctx) {
+//
+//    }
+//
+//    @Override
+//    public void postInit(KieAssemblerContext ctx) {
+//
+//    }
+
+
+//    @Override
+//    public Class getServiceInterface() {
+//        return ResourceType.BAYES.getClass();
+//    }
+////
+////    @Override
+////    public RequiredResourceType[] getRequiredResourceType() {
+////        return new RequiredResourceType[0];
+////    }
+//
+//    public ResourceType getResourceType() {
+//        return ResourceType.BAYES;
+//    }
+//
+//    @Override
+//    public BayesAssembler newKieAssembler(KnowledgeBuilder kbuilder) {
+//        return new BayesAssembler(kbuilder);
+//    }
+
+
+    @Override
+    public ResourceType getResourceType() {
+        return ResourceType.BAYES;
     }
 
     @Override
-    public void addResource(Resource resource, ResourceType type, ResourceConfiguration configuration) throws Exception {
+    public void addResource(KnowledgeBuilder kbuilder, Resource resource, ResourceType type, ResourceConfiguration configuration) throws Exception {
         BayesNetwork network;
         JunctionTreeBuilder builder;
 
@@ -49,9 +92,10 @@ public class BayesAssembler implements KieAssembler {
             return;
         }
 
-        PackageRegistry pkgReg = kbuilder.getPackageRegistry( network.getPackageName() );
+        KnowledgeBuilderImpl kbuilderImpl = (KnowledgeBuilderImpl) kbuilder;
+        PackageRegistry pkgReg = kbuilderImpl.getPackageRegistry( network.getPackageName() );
         if ( pkgReg == null ) {
-            pkgReg = kbuilder.newPackage( new PackageDescr( network.getPackageName() ) );
+            pkgReg = kbuilderImpl.newPackage( new PackageDescr( network.getPackageName() ) );
         }
 
         InternalKnowledgePackage kpkgs = pkgReg.getPackage();
@@ -66,5 +110,10 @@ public class BayesAssembler implements KieAssembler {
             rpkg.put(ResourceType.BAYES, bpkg);
         }
         bpkg.addJunctionTree(network.getName(), builder.build());
+    }
+
+    @Override
+    public Class getServiceInterface() {
+        return KieAssemblerService.class;
     }
 }
