@@ -79,7 +79,6 @@ import org.kie.api.runtime.rule.AccumulateFunction;
 import org.kie.internal.ChangeSet;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.KnowledgeBaseFactory;
-import org.kie.internal.assembler.KieAssembler;
 import org.kie.internal.assembler.KieAssemblerService;
 import org.kie.internal.assembler.KieAssemblers;
 import org.kie.internal.builder.CompositeKnowledgeBuilder;
