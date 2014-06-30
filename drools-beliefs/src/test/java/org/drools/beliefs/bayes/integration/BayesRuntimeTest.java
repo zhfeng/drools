@@ -29,7 +29,7 @@ public class BayesRuntimeTest {
 
         StatefulKnowledgeSessionImpl ksession = (StatefulKnowledgeSessionImpl) kbase.newStatefulKnowledgeSession();
 
-        BayesRuntime bayesRuntime = (BayesRuntime) ksession.getKieRuntime(BayesRuntime.class);
+        BayesRuntime bayesRuntime = ksession.getKieRuntime(BayesRuntime.class);
         BayesInstance<Garden> instance = bayesRuntime.getInstance( Garden.class );
         assertNotNull(  instance );
 

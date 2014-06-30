@@ -1,8 +1,5 @@
 package org.drools.beliefs.bayes.assembler;
 
-//import org.drools.compiler.assembler.KieAssembler;
-//import org.drools.compiler.assembler.KieAssemblerContext;
-//import org.drools.compiler.assembler.KieAssemblerFactory;
 import org.drools.beliefs.bayes.BayesNetwork;
 import org.drools.beliefs.bayes.JunctionTreeBuilder;
 import org.drools.beliefs.bayes.model.Bif;
@@ -10,9 +7,7 @@ import org.drools.beliefs.bayes.model.XmlBifParser;
 import org.drools.compiler.builder.impl.KnowledgeBuilderImpl;
 import org.drools.compiler.compiler.PackageRegistry;
 import org.drools.compiler.lang.descr.PackageDescr;
-import org.drools.core.KieFactoryInitContext;
 import org.drools.core.definitions.InternalKnowledgePackage;
-import org.drools.core.weaver.RequiredResourceType;
 import org.kie.api.io.Resource;
 import org.kie.api.io.ResourceConfiguration;
 import org.kie.api.io.ResourceType;
@@ -22,45 +17,10 @@ import org.kie.internal.io.ResourceTypePackage;
 
 import java.util.Map;
 
-public class BayesAssemblerService implements KieAssemblerService<BayesAssembler> {
+public class BayesAssemblerService implements KieAssemblerService {
 
     public BayesAssemblerService() {
     }
-
-//    @Override
-//    public void preInit(KieAssemblerContext ctx) {
-//
-//    }
-//
-//    @Override
-//    public void init(KieAssemblerContext ctx) {
-//
-//    }
-//
-//    @Override
-//    public void postInit(KieAssemblerContext ctx) {
-//
-//    }
-
-
-//    @Override
-//    public Class getServiceInterface() {
-//        return ResourceType.BAYES.getClass();
-//    }
-////
-////    @Override
-////    public RequiredResourceType[] getRequiredResourceType() {
-////        return new RequiredResourceType[0];
-////    }
-//
-//    public ResourceType getResourceType() {
-//        return ResourceType.BAYES;
-//    }
-//
-//    @Override
-//    public BayesAssembler newKieAssembler(KnowledgeBuilder kbuilder) {
-//        return new BayesAssembler(kbuilder);
-//    }
 
 
     @Override
