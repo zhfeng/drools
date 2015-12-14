@@ -41,8 +41,11 @@ public class RightTupleImpl extends BaseTuple implements RightTuple {
     public RightTupleImpl() { }
     
     public RightTupleImpl(InternalFactHandle handle) {
-        // This constructor is here for DSL testing
         setFactHandle( handle );
+    }
+
+    public RightTupleImpl(Object fact) {
+        setFactObject( fact );
     }
 
     public RightTupleImpl(InternalFactHandle handle,
@@ -63,8 +66,10 @@ public class RightTupleImpl extends BaseTuple implements RightTuple {
     }
 
     public void unlinkFromRightParent() {
-        getFactHandle().removeRightTuple( this );
-        setFactHandle( null );
+        if (getFactHandle() != null) {
+            getFactHandle().removeRightTuple( this );
+            setFactHandle( null );
+        }
         this.handlePrevious = null;
         this.handleNext = null;
         this.blocked = null;
@@ -201,7 +206,7 @@ public class RightTupleImpl extends BaseTuple implements RightTuple {
     }
 
     public String toString() {
-        return getFactHandle().toString() + "\n";
+        return getFactHandle() != null ? getFactHandle() + "\n" : getFactObject() + "\n";
     }
 
     public boolean equals(Object object) {
@@ -236,7 +241,7 @@ public class RightTupleImpl extends BaseTuple implements RightTuple {
 
     @Override
     public Object getObject( int pattern ) {
-        return pattern == 0 ? getFactHandle().getObject() : null;
+        return pattern == 0 ? getFactObject() : null;
     }
 
     @Override
@@ -251,7 +256,7 @@ public class RightTupleImpl extends BaseTuple implements RightTuple {
 
     @Override
     public Object[] toObjects() {
-        return new Object[] { getFactHandle().getObject() };
+        return new Object[] { getFactObject() };
     }
 
     @Override

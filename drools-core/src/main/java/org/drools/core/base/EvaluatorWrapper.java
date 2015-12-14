@@ -16,6 +16,7 @@
 
 package org.drools.core.base;
 
+import org.drools.core.base.evaluators.PointInTimeEvaluator;
 import org.drools.core.base.extractors.ConstantValueReader;
 import org.drools.core.base.extractors.SelfReferenceClassFieldReader;
 import org.drools.core.base.field.ObjectFieldImpl;
@@ -91,12 +92,21 @@ public class EvaluatorWrapper
      */
     public boolean evaluate(Object left,
                             Object right) {
+        if (evaluator instanceof PointInTimeEvaluator && !rightExtractor.isSelfReference() && (leftBinding == null || !leftExtractor.isSelfReference())) {
+            return ( (PointInTimeEvaluator) evaluator ).evaluate( workingMemory,
+                                                                  leftBinding != null ? leftExtractor : new ConstantValueReader( left ),
+                                                                  left,
+                                                                  rightExtractor,
+                                                                  right );
+        }
+
         if (rightHandle == null || rightBinding == null) {
             return evaluator.evaluate( workingMemory,
                                        leftBinding != null ? leftExtractor : new ConstantValueReader(left),
                                        leftHandle,
                                        new ObjectFieldImpl(right) );
         }
+
         return evaluator.evaluate( workingMemory,
                                    leftBinding != null ? leftExtractor : new ConstantValueReader(left),
                                    leftHandle,
@@ -180,6 +190,14 @@ public class EvaluatorWrapper
         return evaluator.evaluateCachedLeft( workingMemory,
                                              context,
                                              right );
+    }
+
+    public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory,
+                                      VariableContextEntry context,
+                                      Object rightObject) {
+        return evaluator.evaluateCachedLeft( workingMemory,
+                                             context,
+                                             rightObject );
     }
 
     /**

@@ -17,7 +17,6 @@ package org.drools.core.rule.constraint;
 
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.IntervalProviderConstraint;
@@ -61,6 +60,7 @@ public class EvaluatorConstraint extends MutableTypeConstraint implements Interv
         return declarations.length == 0;
     }
 
+    @Override
     public boolean isAllowed(InternalFactHandle handle, InternalWorkingMemory workingMemory) {
         if (isLiteral()) {
             return evaluator.evaluate(workingMemory, rightReadAccessor, handle, field);
@@ -73,6 +73,12 @@ public class EvaluatorConstraint extends MutableTypeConstraint implements Interv
                                    handle );
     }
 
+    @Override
+    public boolean isAllowed( Object object, InternalWorkingMemory workingMemory ) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isAllowedCachedLeft(ContextEntry context, InternalFactHandle handle) {
         if (isLiteral()) {
             return evaluator.evaluate( ((LiteralContextEntry) context).workingMemory,
@@ -86,6 +92,14 @@ public class EvaluatorConstraint extends MutableTypeConstraint implements Interv
                                              handle );
     }
 
+    @Override
+    public boolean isAllowedCachedLeft(ContextEntry context, Object object) {
+        return evaluator.evaluateCachedLeft( ((VariableContextEntry) context).workingMemory,
+                                             (VariableContextEntry) context,
+                                             object );
+    }
+
+    @Override
     public boolean isAllowedCachedRight(Tuple tuple, ContextEntry context) {
         if (isLiteral()) {
             return evaluator.evaluate( ((LiteralContextEntry) context).workingMemory,

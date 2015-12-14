@@ -46,9 +46,7 @@ public class ReactiveFromNode extends FromNode<ReactiveFromNode.ReactiveFromMemo
                                           null,
                                           this.betaConstraints.createContext(),
                                           NodeTypeEnums.FromNode );
-        return new ReactiveFromMemory( beta,
-                               this.dataProvider,
-                               this.alphaConstraints );
+        return new ReactiveFromMemory( beta, this.dataProvider );
     }
 
     public short getType() {
@@ -62,9 +60,8 @@ public class ReactiveFromNode extends FromNode<ReactiveFromNode.ReactiveFromMemo
         private final TupleSets<LeftTuple> stagedLeftTuples;
 
         public ReactiveFromMemory(BetaMemory betaMemory,
-                                  DataProvider dataProvider,
-                                  AlphaNodeFieldConstraint[] constraints) {
-            super(betaMemory, dataProvider, constraints);
+                                  DataProvider dataProvider) {
+            super(betaMemory, dataProvider);
             stagedLeftTuples = new TupleSetsImpl<LeftTuple>();
         }
 

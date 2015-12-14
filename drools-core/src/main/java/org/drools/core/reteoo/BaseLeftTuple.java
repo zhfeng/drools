@@ -148,7 +148,12 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
                          LeftTuple currentRightChild,
                          Sink sink,
                          boolean leftTupleMemoryEnabled) {
-        setFactHandle( rightTuple.getFactHandle() );
+        if (rightTuple.getFactHandle() != null) {
+            setFactHandle( rightTuple.getFactHandle() );
+        } else {
+            setFactObject( rightTuple.getFactObject() );
+        }
+
         this.index = leftTuple.getIndex() + 1;
         this.parent = leftTuple;
         setPropagationContext( rightTuple.getPropagationContext() );
@@ -410,18 +415,23 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
 
     @Override
     public InternalFactHandle get(int index) {
+        LeftTuple entry = getLeftTuple( index );
+        return entry == null ? null : entry.getFactHandle();
+    }
+
+    private LeftTuple getLeftTuple( int index ) {
         LeftTuple entry = this;
-        while ( entry != null && ( entry.getIndex() != index || entry.getFactHandle() == null ) ) {
+        while ( entry != null && ( entry.getIndex() != index || !entry.hasFact() ) ) {
             entry = entry.getParent();
         }
-        return entry == null ? null : entry.getFactHandle();
+        return entry;
     }
 
     public InternalFactHandle[] toFactHandles() {
         InternalFactHandle[] handles = new InternalFactHandle[this.index + 1];
         LeftTuple entry = this;
         while ( entry != null ) {
-            if ( entry.getFactHandle() != null ) {
+            if ( entry.hasFact() ) {
                 // eval, not, exists have no right input
                 handles[entry.getIndex()] = entry.getFactHandle();
             }
@@ -434,9 +444,9 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
         Object[] objs = new Object[this.index + 1];
         LeftTuple entry = this;
         while ( entry != null ) {
-            if ( entry.getFactHandle() != null ) {
+            if ( entry.hasFact() ) {
                 // eval, not, exists have no right input
-                objs[entry.getIndex()] = entry.getFactHandle().getObject();
+                objs[entry.getIndex()] = entry.getFactObject();
             }
             entry = entry.getParent();
         }
@@ -483,8 +493,7 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
 
         LeftTuple entry = this;
         while ( entry != null ) {
-            //buffer.append( entry.handle );
-            buffer.append(entry.getFactHandle());
+            buffer.append(entry.getFactHandle() != null ? entry.getFactHandle() : entry.getFactObject());
             if ( entry.getParent() != null ) {
                 buffer.append("\n");
             }
@@ -607,26 +616,11 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
         if ( elements <= this.size() ) {
             final int lastindex = elements - 1;
 
-            while ( entry.getIndex() != lastindex || entry.getFactHandle() == null ) {
+            while ( entry.getParent() != null && ( entry.getIndex() != lastindex || !entry.hasFact() ) ) {
                 entry = entry.getParent();
             }
         }
         return entry;
-    }
-
-    @Override
-    public Object[] toObjectArray() {
-        Object[] objects = new Object[this.index + 1];
-        LeftTuple entry = this;
-        while ( entry != null ) {
-            if ( entry.getFactHandle() != null ) {
-                // can be null for eval, not and exists that have no right input
-                Object object = entry.getFactHandle().getObject();
-                objects[entry.getIndex()] = object;
-            }
-            entry = entry.getParent();
-        }
-        return objects;
     }
 
     @Override
@@ -682,6 +676,7 @@ public class BaseLeftTuple extends BaseTuple implements LeftTuple {
 
     @Override
     public Object getObject(int index) {
-        return get(index).getObject();
+        LeftTuple entry = getLeftTuple( index );
+        return entry == null ? null : entry.getFactObject();
     }
 }

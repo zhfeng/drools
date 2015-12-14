@@ -25,7 +25,6 @@ import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.definitions.InternalKnowledgePackage;
 import org.drools.core.impl.InternalKnowledgeBase;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.PropertySpecificUtil;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.rule.ContextEntry;
@@ -207,14 +206,22 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
     }
 
     public boolean isAllowed(InternalFactHandle handle, InternalWorkingMemory workingMemory) {
-        if (isUnification) {
-            throw new UnsupportedOperationException( "Should not be called" );
-        }
+        return evaluate(handle, handle.getObject(), workingMemory, null);
+    }
 
-        return evaluate(handle, workingMemory, null);
+    public boolean isAllowed(Object object, InternalWorkingMemory workingMemory) {
+        return evaluate(null, object, workingMemory, null);
     }
 
     public boolean isAllowedCachedLeft(ContextEntry context, InternalFactHandle handle) {
+        return isAllowedCachedLeft( context, handle, handle.getObject() );
+    }
+
+    public boolean isAllowedCachedLeft(ContextEntry context, Object object) {
+        return isAllowedCachedLeft( context, null, object );
+    }
+
+    private boolean isAllowedCachedLeft(ContextEntry context, InternalFactHandle handle, Object object) {
         if (isUnification) {
             if (((UnificationContextEntry)context).getVariable() != null) {
                 return true;
@@ -223,7 +230,7 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
         }
 
         MvelContextEntry mvelContextEntry = (MvelContextEntry)context;
-        return evaluate(handle, mvelContextEntry.workingMemory, mvelContextEntry.tuple);
+        return evaluate(handle, object, mvelContextEntry.workingMemory, mvelContextEntry.tuple);
     }
 
     public boolean isAllowedCachedRight(Tuple tuple, ContextEntry context) {
@@ -238,24 +245,24 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
         }
 
         MvelContextEntry mvelContextEntry = (MvelContextEntry)context;
-        return evaluate(mvelContextEntry.rightHandle, mvelContextEntry.workingMemory, tuple);
+        return evaluate(mvelContextEntry.rightHandle, mvelContextEntry.rightHandle.getObject(), mvelContextEntry.workingMemory, tuple);
     }
 
-    protected boolean evaluate(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    protected boolean evaluate(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         if (!jitted) {
             int jittingThreshold = TEST_JITTING ? 0 : workingMemory.getKnowledgeBase().getConfiguration().getJittingThreshold();
             if (conditionEvaluator == null) {
                 createMvelConditionEvaluator(workingMemory);
                 if (jittingThreshold == 0 && !isDynamic) { // Only for test purposes
-                    forceJitEvaluator(handle, workingMemory, tuple);
+                    forceJitEvaluator(handle, object, workingMemory, tuple);
                 }
             }
 
             if (!TEST_JITTING && !isDynamic && invocationCounter.getAndIncrement() == jittingThreshold) {
-                jitEvaluator(handle, workingMemory, tuple);
+                jitEvaluator(handle, object, workingMemory, tuple);
             }
         }
-        return conditionEvaluator.evaluate(handle, workingMemory, tuple);
+        return conditionEvaluator.evaluate(handle, object, workingMemory, tuple);
     }
 
     protected void createMvelConditionEvaluator(InternalWorkingMemory workingMemory) {
@@ -271,23 +278,23 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
         }
     }
 
-    protected boolean forceJitEvaluator(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    protected boolean forceJitEvaluator(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         boolean mvelValue;
         try {
-            mvelValue = conditionEvaluator.evaluate(handle, workingMemory, tuple);
+            mvelValue = conditionEvaluator.evaluate(handle, object, workingMemory, tuple);
         } catch (ClassCastException cce) {
             mvelValue = false;
         }
-        jitEvaluator(handle, workingMemory, tuple);
+        jitEvaluator(handle, object, workingMemory, tuple);
         return mvelValue;
     }
 
-    protected void jitEvaluator(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    protected void jitEvaluator(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         jitted = true;
         if (TEST_JITTING) {
-            executeJitting(handle, workingMemory, tuple);
+            executeJitting(handle, object, workingMemory, tuple);
         } else {
-            ExecutorHolder.executor.execute(new ConditionJitter(this, handle, workingMemory, tuple));
+            ExecutorHolder.executor.execute(new ConditionJitter(this, handle, object, workingMemory, tuple));
         }
     }
 
@@ -296,20 +303,23 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
         private InternalFactHandle rightHandle;
         private InternalWorkingMemory workingMemory;
         private Tuple tuple;
+        private Object object;
 
-        private ConditionJitter(MvelConstraint mvelConstraint, InternalFactHandle rightHandle, InternalWorkingMemory workingMemory, Tuple tuple) {
+        private ConditionJitter(MvelConstraint mvelConstraint, InternalFactHandle rightHandle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
             this.mvelConstraint = mvelConstraint;
             this.rightHandle = rightHandle;
             this.workingMemory = workingMemory;
             this.tuple = tuple;
+            this.object = object;
         }
 
         public void run() {
-            mvelConstraint.executeJitting(rightHandle, workingMemory, tuple);
+            mvelConstraint.executeJitting(rightHandle, object, workingMemory, tuple);
             mvelConstraint = null;
             rightHandle = null;
             workingMemory = null;
             tuple = null;
+            object = null;
         }
     }
 
@@ -317,7 +327,7 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
         private static final Executor executor = ExecutorProviderFactory.getExecutorProvider().getExecutor();
     }
 
-    private void executeJitting(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    private void executeJitting(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         InternalKnowledgeBase kBase = workingMemory.getKnowledgeBase();
         if ( MemoryUtil.permGenStats.isUsageThresholdExceeded(kBase.getConfiguration().getPermGenThreshold()) ) {
             return;
@@ -325,7 +335,7 @@ public class MvelConstraint extends MutableTypeConstraint implements IndexableCo
 
         try {
             if (analyzedCondition == null) {
-                analyzedCondition = ((MvelConditionEvaluator) conditionEvaluator).getAnalyzedCondition(handle, workingMemory, tuple);
+                analyzedCondition = ((MvelConditionEvaluator) conditionEvaluator).getAnalyzedCondition(handle, object, workingMemory, tuple);
             }
             conditionEvaluator = ASMConditionEvaluatorJitter.jitEvaluator(expression, analyzedCondition, declarations, operators, kBase.getRootClassLoader(), tuple);
         } catch (Throwable t) {

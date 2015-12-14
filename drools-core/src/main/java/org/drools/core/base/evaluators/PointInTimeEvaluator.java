@@ -163,6 +163,19 @@ public abstract class PointInTimeEvaluator extends BaseEvaluator {
         return evaluate(rightTS, leftTS);
     }
 
+    public boolean evaluate(InternalWorkingMemory workingMemory,
+                            final InternalReadAccessor extractor1,
+                            final Object object1,
+                            final InternalReadAccessor extractor2,
+                            final Object object2) {
+        if (object1 == null || object2 == null) {
+            return false;
+        }
+        long rightTS = object1 instanceof Date ? ( (Date) object1 ).getTime() : (Long)object1;
+        long leftTS = object2 instanceof Date ? ( (Date) object2 ).getTime() : (Long)object2;
+        return evaluate(rightTS, leftTS);
+    }
+
     private void setParameters(long[] parameters) {
         if ( parameters == null || parameters.length == 0 ) {
             // open bounded range

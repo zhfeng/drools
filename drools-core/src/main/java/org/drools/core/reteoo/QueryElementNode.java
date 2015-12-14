@@ -45,6 +45,7 @@ import org.drools.core.rule.Declaration;
 import org.drools.core.rule.QueryElement;
 import org.drools.core.rule.QueryImpl;
 import org.drools.core.spi.PropagationContext;
+import org.drools.core.spi.Tuple;
 import org.drools.core.util.AbstractBaseLinkedListNode;
 import org.kie.api.runtime.rule.Variable;
 
@@ -178,7 +179,7 @@ public class QueryElementNode extends LeftTupleSource
                                                                     workingMemory );
     }
     
-    public DroolsQuery createDroolsQuery(LeftTuple leftTuple,
+    public DroolsQuery createDroolsQuery(Tuple tuple,
                                          InternalFactHandle handle,
                                          StackEntry stackEntry,
                                          final List<PathMemory> pmems,
@@ -200,7 +201,7 @@ public class QueryElementNode extends LeftTupleSource
         for ( int declIndexe : declIndexes ) {
             Declaration declr = (Declaration) argsTemplate[declIndexe];
 
-            Object tupleObject = leftTuple.get( declr ).getObject();
+            Object tupleObject = tuple.getObject( declr );
 
             Object o;
 
@@ -228,12 +229,12 @@ public class QueryElementNode extends LeftTupleSource
             }
         }
 
-        UnificationNodeViewChangedEventListener collector = createCollector( leftTuple, varIndexes, this.tupleMemoryEnabled );
+        UnificationNodeViewChangedEventListener collector = createCollector( tuple, varIndexes, this.tupleMemoryEnabled );
         
         boolean executeAsOpenQuery = openQuery;
         if ( executeAsOpenQuery ) {
             // There is no point in doing an open query if the caller is a non-open query.
-            Object object = leftTuple.get( 0 ).getObject();
+            Object object = tuple.get( 0 ).getObject();
             if ( object instanceof DroolsQuery && !((DroolsQuery) object).isOpen() ) {
                 executeAsOpenQuery = false;
             }          
@@ -253,12 +254,12 @@ public class QueryElementNode extends LeftTupleSource
 
         handle.setObject( queryObject );
 
-        leftTuple.setContextObject( handle ); // so it can be retracted later and destroyed
+        tuple.setContextObject( handle ); // so it can be retracted later and destroyed
 
         return queryObject;
     }
 
-    protected UnificationNodeViewChangedEventListener createCollector( LeftTuple leftTuple, int[] varIndexes, boolean tupleMemoryEnabled ) {
+    protected UnificationNodeViewChangedEventListener createCollector( Tuple leftTuple, int[] varIndexes, boolean tupleMemoryEnabled ) {
         return new UnificationNodeViewChangedEventListener( leftTuple,
                                                             varIndexes,
                                                             this,
@@ -313,7 +314,7 @@ public class QueryElementNode extends LeftTupleSource
         implements
         InternalViewChangedEventListener {
 
-        protected LeftTuple          leftTuple;
+        protected Tuple              tuple;
 
         protected QueryElementNode   node;
 
@@ -323,11 +324,11 @@ public class QueryElementNode extends LeftTupleSource
 
         protected boolean            tupleMemoryEnabled;
 
-        public UnificationNodeViewChangedEventListener(LeftTuple leftTuple,
+        public UnificationNodeViewChangedEventListener(Tuple tuple,
                                                        int[] variables,
                                                        QueryElementNode node,
                                                        boolean tupleMemoryEnabled) {
-            this.leftTuple = leftTuple;
+            this.tuple = tuple;
             this.variables = variables;
             this.node = node;
             this.tupleMemoryEnabled = tupleMemoryEnabled;
@@ -360,7 +361,7 @@ public class QueryElementNode extends LeftTupleSource
             for (int variable : this.variables) {
                 decl = decls[variable];
                 objects[variable] = decl.getValue(workingMemory,
-                                                  resultLeftTuple.get(decl).getObject());
+                                                  resultLeftTuple.getObject(decl));
             }
 
             QueryElementFactHandle resultHandle = createQueryResultHandle(context,
@@ -417,7 +418,7 @@ public class QueryElementNode extends LeftTupleSource
 
             if ( pass ) {
                 LeftTupleSink sink = dquery.getLeftTupleSink();
-                LeftTuple childLeftTuple = sink.createLeftTuple( this.leftTuple, rightTuple, sink );
+                LeftTuple childLeftTuple = sink.createLeftTuple( (LeftTuple) this.tuple, rightTuple, sink );
                 boolean stagedInsertWasEmpty = dquery.getResultLeftTupleSets().addInsert(childLeftTuple);
                 if ( stagedInsertWasEmpty ) {
                     dquery.getQueryNodeMemory().setNodeDirtyWithoutNotify();
@@ -454,7 +455,7 @@ public class QueryElementNode extends LeftTupleSource
             if( context.getReaderContext() != null ) {
                 Map<TupleKey, QueryElementContext> map = (Map<TupleKey, QueryElementContext>) context.getReaderContext().nodeMemories.get( node.getId() );
                 if( map != null ) {
-                    QueryElementContext _context = map.get( PersisterHelper.createTupleKey( leftTuple ) );
+                    QueryElementContext _context = map.get( PersisterHelper.createTupleKey( tuple ) );
                     if( _context != null ) {
                         _handle = _context.results.removeFirst();
                     }
@@ -540,11 +541,6 @@ public class QueryElementNode extends LeftTupleSource
         public List<?> getResults() {
             throw new UnsupportedOperationException( getClass().getCanonicalName() + " does not support the getResults() method." );
         }
-
-        public LeftTuple getLeftTuple() {
-            return leftTuple;
-        }
-
     }
 
     public LeftTuple createLeftTuple(InternalFactHandle factHandle,

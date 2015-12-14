@@ -18,7 +18,6 @@ package org.drools.core.rule.builder.dialect.asm;
 import org.drools.core.WorkingMemory;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.RuleTerminalNode;
 import org.drools.core.reteoo.Sink;
 import org.drools.core.rule.Declaration;
@@ -59,18 +58,26 @@ public class ConsequenceGenerator {
                 // Tuple tuple = knowledgeHelper.getTuple();
                 mv.visitVarInsn(ALOAD, 1);
                 invokeInterface(KnowledgeHelper.class, "getTuple", Tuple.class);
-                cast(LeftTuple.class);
                 mv.visitVarInsn(ASTORE, 3); // LeftTuple
 
-                // Declaration[] declarations = ((RuleTerminalNode)knowledgeHelper.getMatch().getTuple().getTupleSink()).getDeclarations();
-                mv.visitVarInsn(ALOAD, 1);
-                invokeInterface(KnowledgeHelper.class, "getMatch", Activation.class);
-                invokeInterface(Activation.class, "getTuple", Tuple.class);
-                invokeInterface(Tuple.class, "getTupleSink", Sink.class);
-                cast(RuleTerminalNode.class);
-                invokeVirtual(RuleTerminalNode.class, "getRequiredDeclarations", Declaration[].class);
-                mv.visitVarInsn(ASTORE, 4);
+                boolean requireDeclarations = false;
+                for (boolean b : stub.getNotPatterns()) {
+                    if (b) {
+                        requireDeclarations = true;
+                        break;
+                    }
+                }
 
+                if (requireDeclarations) {
+                    // Declaration[] declarations = ((RuleTerminalNode)knowledgeHelper.getMatch().getTuple().getTupleSink()).getDeclarations();
+                    mv.visitVarInsn( ALOAD, 1 );
+                    invokeInterface( KnowledgeHelper.class, "getMatch", Activation.class );
+                    invokeInterface( Activation.class, "getTuple", Tuple.class );
+                    invokeInterface( Tuple.class, "getTupleSink", Sink.class );
+                    cast( RuleTerminalNode.class );
+                    invokeVirtual( RuleTerminalNode.class, "getRequiredDeclarations", Declaration[].class );
+                    mv.visitVarInsn( ASTORE, 4 );
+                }
                 
                 Tuple currentTuple = tuple;
                 objAstorePos = 6; // astore start position for objects to store in loop
@@ -86,21 +93,21 @@ public class ConsequenceGenerator {
 
                     // handle = tuple.getFactHandle()
                     mv.visitVarInsn(ALOAD, 3);
-                    invokeInterface(LeftTuple.class, "getFactHandle", InternalFactHandle.class);
+                    invokeInterface(Tuple.class, "getFactHandle", InternalFactHandle.class);
                     mv.visitVarInsn(ASTORE, handlePos);
 
                     String declarationType = declarations[i].getTypeName();
                     if (stub.getNotPatterns()[i]) {
                         // notPattern indexes field declarations
-                        
+
                         // declarations[i].getValue((InternalWorkingMemory)workingMemory, fact[i].getObject());
                         mv.visitVarInsn(ALOAD, 4); // org.kie.rule.Declaration[]
                         push(i); // i
                         mv.visitInsn(AALOAD); // declarations[i]
                         mv.visitVarInsn(ALOAD, 2); // WorkingMemory
                         cast(InternalWorkingMemory.class);
-                        mv.visitVarInsn(ALOAD, handlePos); // handle[i]
-                        invokeInterface(InternalFactHandle.class, "getObject", Object.class);
+                        mv.visitVarInsn(ALOAD, 3);
+                        invokeInterface(Tuple.class, "getFactObject", Object.class);
 
                         storeObjectFromDeclaration(declarations[i], declarationType);
 
@@ -112,8 +119,8 @@ public class ConsequenceGenerator {
                         cast(InternalFactHandle.class);
                         mv.visitVarInsn(ASTORE, handlePos);
                     } else {
-                        mv.visitVarInsn(ALOAD, handlePos); // handle[i]
-                        invokeInterface(InternalFactHandle.class, "getObject", Object.class);
+                        mv.visitVarInsn(ALOAD, 3);
+                        invokeInterface(Tuple.class, "getFactObject", Object.class);
                         mv.visitTypeInsn(CHECKCAST, internalName(declarationType));
                         objAstorePos += store(objPos, declarationType); // obj[i]
                     }
@@ -137,6 +144,6 @@ public class ConsequenceGenerator {
             }
         });
 
-        stub.setConsequence(generator.<Consequence>newInstance());
+        stub.setConsequence( generator.<Consequence>newInstance() );
     }
 }

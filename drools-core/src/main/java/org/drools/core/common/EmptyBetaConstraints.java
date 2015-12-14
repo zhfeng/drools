@@ -18,7 +18,6 @@ package org.drools.core.common;
 
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.spi.BetaNodeFieldConstraint;
@@ -58,17 +57,12 @@ public class EmptyBetaConstraints
 
     public void writeExternal(ObjectOutput out) throws IOException {
     }
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#updateFromTuple(org.kie.reteoo.ReteTuple)
-     */
+
     public void updateFromTuple(final ContextEntry[] context,
                                 final InternalWorkingMemory workingMemory,
                                 final Tuple tuple) {
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#updateFromFactHandle(org.kie.common.InternalFactHandle)
-     */
     public void updateFromFactHandle(final ContextEntry[] context,
                                      final InternalWorkingMemory workingMemory,
                                      final InternalFactHandle handle) {
@@ -80,17 +74,16 @@ public class EmptyBetaConstraints
     public void resetFactHandle(final ContextEntry[] context) {
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedLeft(java.lang.Object)
-     */
     public boolean isAllowedCachedLeft(final ContextEntry[] context,
                                        final InternalFactHandle handle) {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
-     */
+    public boolean isAllowedCachedLeft(final ContextEntry[] context,
+                                       final Object object) {
+        return true;
+    }
+
     public boolean isAllowedCachedRight(final ContextEntry[] context,
                                         final Tuple tuple) {
         return true;

@@ -16,7 +16,6 @@
 package org.drools.core.phreak;
 
 import org.drools.core.common.BetaConstraints;
-import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.common.TupleSets;
 import org.drools.core.reteoo.BetaMemory;
@@ -112,10 +111,7 @@ public class PhreakFromNode {
                     continue; // skip anything if it not assignable
                 }
 
-                RightTuple rightTuple = fromNode.createRightTuple(leftTuple,
-                                                                  propagationContext,
-                                                                  wm,
-                                                                  object);
+                RightTuple rightTuple = fromNode.createRightTuple(leftTuple, propagationContext, wm, object);
 
                 checkConstraintsAndPropagate(sink,
                                              leftTuple,
@@ -182,10 +178,7 @@ public class PhreakFromNode {
 
                 if (rightTuple == null) {
                     // new match, propagate assert
-                    rightTuple = fromNode.createRightTuple(leftTuple,
-                                                           propagationContext,
-                                                           wm,
-                                                           object);
+                    rightTuple = fromNode.createRightTuple(leftTuple, propagationContext, wm, object);
                 } else {
                     // previous match, so reevaluate and propagate modify
                     if (rightIt.next(rightTuple) != null) {
@@ -286,18 +279,18 @@ public class PhreakFromNode {
                                                     final boolean useLeftMemory,
                                                     TupleSets<LeftTuple> trgLeftTuples,
                                                     TupleSets<LeftTuple> stagedLeftTuples) {
-        if ( isAllowed( rightTuple.getFactHandle(), alphaConstraints, wm, fm ) ) {
+        if ( isAllowed( rightTuple.getFactObject(), alphaConstraints, wm, fm ) ) {
             propagate( sink, leftTuple, rightTuple, betaConstraints, propagationContext, context, useLeftMemory, trgLeftTuples, stagedLeftTuples );
         }
     }
 
-    public static boolean isAllowed( InternalFactHandle factHandle,
+    public static boolean isAllowed( Object object,
                                      AlphaNodeFieldConstraint[] alphaConstraints,
                                      InternalWorkingMemory wm,
                                      FromMemory fm ) {
         if (alphaConstraints != null) {
             for (int i = 0, length = alphaConstraints.length; i < length; i++) {
-                if (!alphaConstraints[i].isAllowed(factHandle, wm)) {
+                if (!alphaConstraints[i].isAllowed(object, wm)) {
                     return false;
                 }
             }
@@ -314,7 +307,7 @@ public class PhreakFromNode {
                                   boolean useLeftMemory,
                                   TupleSets<LeftTuple> trgLeftTuples,
                                   TupleSets<LeftTuple> stagedLeftTuples ) {
-        if (betaConstraints.isAllowedCachedLeft(context, rightTuple.getFactHandle())) {
+        if ( isAllowedCachedLeft( rightTuple, betaConstraints, context ) ) {
 
             if (rightTuple.getFirstChild() == null) {
                 // this is a new match, so propagate as assert
@@ -334,6 +327,12 @@ public class PhreakFromNode {
         } else {
             deleteChildLeftTuple(propagationContext, trgLeftTuples, stagedLeftTuples, rightTuple.getFirstChild());
         }
+    }
+
+    private static boolean isAllowedCachedLeft( RightTuple rightTuple, BetaConstraints betaConstraints, ContextEntry[] context ) {
+        return rightTuple.getFactHandle() != null ?
+               betaConstraints.isAllowedCachedLeft(context, rightTuple.getFactHandle()) :
+               betaConstraints.isAllowedCachedLeft(context, rightTuple.getFactObject());
     }
 
     public static void deleteChildLeftTuple(PropagationContext propagationContext,

@@ -20,5 +20,5 @@ import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.spi.Tuple;
 
 public interface ConditionEvaluator {
-    boolean evaluate(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple);
+    boolean evaluate(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple);
 }

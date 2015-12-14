@@ -193,5 +193,4 @@ public class EvalNodeLeftTuple extends BaseLeftTuple {
                .append("(").append( getTupleSink().getId()).append(")");
         return builder.toString();
     }
-
 }

@@ -25,6 +25,8 @@ public interface AlphaNodeFieldConstraint
     
     boolean isAllowed(InternalFactHandle handle, InternalWorkingMemory workingMemory);
 
+    boolean isAllowed(Object object, InternalWorkingMemory workingMemory);
+
     /**
      * Clone this constraints only if it is already used by a different node, otherwise returns this
      */

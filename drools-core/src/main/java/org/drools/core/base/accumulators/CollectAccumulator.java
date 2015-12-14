@@ -92,7 +92,7 @@ public class CollectAccumulator
                            Declaration[] declarations,
                            Declaration[] innerDeclarations,
                            WorkingMemory workingMemory) throws Exception {
-        Object value = this.unwrapHandle ? ((LeftTuple) handle.getObject()).getFactHandle().getObject() : handle.getObject();
+        Object value = this.unwrapHandle ? ((LeftTuple) handle.getObject()).getFactObject() : handle.getObject();
         ((CollectContext) context).result.add( value );
     }
 
@@ -103,7 +103,7 @@ public class CollectAccumulator
                         Declaration[] declarations,
                         Declaration[] innerDeclarations,
                         WorkingMemory workingMemory) throws Exception {
-        Object value = this.unwrapHandle ? ((LeftTuple) handle.getObject()).getFactHandle().getObject() : handle.getObject();
+        Object value = this.unwrapHandle ? ((LeftTuple) handle.getObject()).getFactObject() : handle.getObject();
         ((CollectContext) context).result.remove( value );
     }
 

@@ -18,7 +18,6 @@ package org.drools.core.common;
 
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.MutableTypeConstraint;
@@ -146,6 +145,13 @@ public class DoubleNonIndexSkipBetaConstraints
         return this.constraint0.isAllowedCachedLeft( context[0],
                                                      handle ) && this.constraint1.isAllowedCachedLeft( context[1],
                                                                                                        handle );
+    }
+
+    public boolean isAllowedCachedLeft(final ContextEntry[] context,
+                                       final Object object) {
+        return this.constraint0.isAllowedCachedLeft( context[0],
+                                                     object ) && this.constraint1.isAllowedCachedLeft( context[1],
+                                                                                                       object );
     }
 
     public boolean isAllowedCachedRight(ContextEntry[] context,

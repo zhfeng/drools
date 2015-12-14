@@ -72,7 +72,7 @@ public class PhreakQueryTerminalNode {
             // find the DroolsQuery object
             Tuple rootEntry = leftTuple.getRootTuple();
 
-            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactHandle().getObject();
+            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactObject();
             dquery.setQuery(qtnNode.getQuery());
             if (dquery.getStackEntry() != null) {
                 checkAndTriggerQueryReevaluation(wm, stack, rootEntry, dquery);
@@ -107,7 +107,7 @@ public class PhreakQueryTerminalNode {
             while (rootEntry.getParent() != null) {
                 rootEntry = rootEntry.getParent();
             }
-            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactHandle().getObject();
+            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactObject();
             dquery.setQuery(qtnNode.getQuery());
             if (dquery.getStackEntry() != null) {
                 checkAndTriggerQueryReevaluation(wm, stack, rootEntry, dquery);
@@ -143,7 +143,7 @@ public class PhreakQueryTerminalNode {
             while (rootEntry.getParent() != null) {
                 rootEntry = rootEntry.getParent();
             }
-            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactHandle().getObject();
+            DroolsQuery dquery = (DroolsQuery) rootEntry.getFactObject();
             dquery.setQuery(qtnNode.getQuery());
 
             if (dquery.getStackEntry() != null) {

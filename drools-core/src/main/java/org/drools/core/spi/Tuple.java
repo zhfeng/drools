@@ -86,6 +86,9 @@ public interface Tuple extends Serializable, Entry<Tuple> {
     InternalFactHandle getFactHandle();
     void setFactHandle( InternalFactHandle handle );
 
+    Object getFactObject();
+    void setFactObject( Object factObject );
+
     /**
      * Returns the ReteTuple that contains the "elements"
      * first elements in this tuple.
@@ -144,4 +147,6 @@ public interface Tuple extends Serializable, Entry<Tuple> {
 
     LeftTuple getLastChild();
     void setLastChild( LeftTuple firstChild );
+
+    boolean hasFact();
 }

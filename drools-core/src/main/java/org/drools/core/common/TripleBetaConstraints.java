@@ -17,7 +17,6 @@
 package org.drools.core.common;
 
 import org.drools.core.RuleBaseConfiguration;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.MutableTypeConstraint;
@@ -109,9 +108,6 @@ public class TripleBetaConstraints extends MultipleBetaConstraint {
         context[2].resetFactHandle();
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedLeft(java.lang.Object)
-     */
     public boolean isAllowedCachedLeft(final ContextEntry[] context,
                                        final InternalFactHandle handle) {
         return (indexed[0] || constraints[0].isAllowedCachedLeft(context[0], handle)) &&
@@ -119,9 +115,13 @@ public class TripleBetaConstraints extends MultipleBetaConstraint {
                (indexed[2] || constraints[2].isAllowedCachedLeft( context[2], handle ));
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
-     */
+    public boolean isAllowedCachedLeft(final ContextEntry[] context,
+                                       final Object object) {
+        return (indexed[0] || constraints[0].isAllowedCachedLeft(context[0], object)) &&
+               (indexed[1] || constraints[1].isAllowedCachedLeft(context[1], object)) &&
+               (indexed[2] || constraints[2].isAllowedCachedLeft( context[2], object ));
+    }
+
     public boolean isAllowedCachedRight(final ContextEntry[] context,
                                         final Tuple tuple) {
         return constraints[0].isAllowedCachedRight( tuple, context[0] ) &&

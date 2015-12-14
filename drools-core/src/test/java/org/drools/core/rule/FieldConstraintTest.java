@@ -187,7 +187,7 @@ public class FieldConstraintTest {
 
             private static final long serialVersionUID = 510l;
 
-            public boolean evaluate(InternalFactHandle handle,
+            public boolean evaluate(Object object,
                                     Tuple tuple,
                                     Declaration[] previousDeclarations,
                                     Declaration[] localDeclarations,
@@ -196,7 +196,7 @@ public class FieldConstraintTest {
                 int price1 = previousDeclarations[0].getIntValue( (InternalWorkingMemory) workingMemory,
                                                                   tuple.getObject( previousDeclarations[0] ) );
                 int price2 = localDeclarations[0].getIntValue( (InternalWorkingMemory) workingMemory,
-                                                               handle.getObject() );
+                                                               object );
 
                 return (price2 == (price1 * 2));
 

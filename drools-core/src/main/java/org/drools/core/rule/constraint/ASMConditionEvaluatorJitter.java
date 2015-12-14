@@ -84,7 +84,7 @@ public class ASMConditionEvaluatorJitter {
 
         generator.addMethod(ACC_PUBLIC,
                             "evaluate",
-                            generator.methodDescr(boolean.class, InternalFactHandle.class, InternalWorkingMemory.class, Tuple.class),
+                            generator.methodDescr(boolean.class, InternalFactHandle.class, Object.class, InternalWorkingMemory.class, Tuple.class),
                             new EvaluateMethodGenerator(condition, declarations, operators, tuple));
 
         if (operators.length == 0) {
@@ -120,6 +120,11 @@ public class ASMConditionEvaluatorJitter {
     }
 
     private static class EvaluateMethodGenerator extends GeneratorHelper.DeclarationAccessorMethod {
+        private static final int FH_POS = 1;
+        private static final int OBJ_POS = 2;
+        private static final int WM_POS = 3;
+        private static final int TUPLE_POS = 4;
+
         private static final int LEFT_OPERAND = 5;
         private static final int RIGHT_OPERAND = 7;
         private static final int ARGUMENTS = 9;
@@ -154,19 +159,16 @@ public class ASMConditionEvaluatorJitter {
             List<GeneratorHelper.DeclarationMatcher> declarationMatchers = matchDeclarationsToTuple(declarations);
 
             Tuple currentTuple = tuple;
-            mv.visitVarInsn(ALOAD, 3);
-            store(4, Tuple.class);
-
             int decPos = ARGUMENTS;
+
             for (GeneratorHelper.DeclarationMatcher declarationMatcher : declarationMatchers) {
                 int i = declarationMatcher.getOriginalIndex();
                 if (currentTuple == null || declarationMatcher.getRootDistance() > currentTuple.getIndex()) {
                     getFieldFromThis("declarations", Declaration[].class);
                     push(i);
                     mv.visitInsn(AALOAD); // declarations[i]
-                    mv.visitVarInsn(ALOAD, 2); // InternalWorkingMemory
-                    mv.visitVarInsn(ALOAD, 1); // InternalFactHandle
-                    invokeInterface( InternalFactHandle.class, "getObject", Object.class );
+                    mv.visitVarInsn(ALOAD, WM_POS); // InternalWorkingMemory
+                    mv.visitVarInsn(ALOAD, OBJ_POS); // InternalFactHandle
                     declPositions[i] = decPos;
                     decPos += storeObjectFromDeclaration(declarationMatcher.getDeclaration(), decPos);
                     continue;
@@ -177,8 +179,8 @@ public class ASMConditionEvaluatorJitter {
                 getFieldFromThis("declarations", Declaration[].class);
                 push(i);
                 mv.visitInsn(AALOAD); // declarations[i]
-                mv.visitVarInsn(ALOAD, 2); // InternalWorkingMemory
-                load(4);
+                mv.visitVarInsn(ALOAD, WM_POS);
+                mv.visitVarInsn(ALOAD, TUPLE_POS);
                 invokeInterface(Tuple.class, "getFactHandle", InternalFactHandle.class);
                 invokeInterface(InternalFactHandle.class, "getObject", Object.class); // tuple.getFactHandle().getObject()
 
@@ -192,9 +194,9 @@ public class ASMConditionEvaluatorJitter {
                 return;
             }
 
-            mv.visitVarInsn(ALOAD, 1); // InternalFactHandle
-            mv.visitVarInsn(ALOAD, 2); // InternalWorkingMemory
-            mv.visitVarInsn(ALOAD, 3); // Tuple
+            mv.visitVarInsn(ALOAD, FH_POS);
+            mv.visitVarInsn(ALOAD, WM_POS);
+            mv.visitVarInsn(ALOAD, TUPLE_POS);
             getFieldFromThis("operators", EvaluatorWrapper[].class);
             invokeStatic(EvaluatorHelper.class, "initOperators", void.class, InternalFactHandle.class, InternalWorkingMemory.class, Tuple.class, EvaluatorWrapper[].class);
         }
@@ -842,14 +844,12 @@ public class ASMConditionEvaluatorJitter {
         private void jitMethodInvocation(MethodInvocation invocation, Class<?> currentClass, boolean firstInvocation) {
             Method method = invocation.getMethod();
             if (firstInvocation && (method == null || (method.getModifiers() & Modifier.STATIC) == 0)) {
-                mv.visitVarInsn(ALOAD, 1);
-                invokeInterface( InternalFactHandle.class, "getObject", Object.class );
+                mv.visitVarInsn(ALOAD, OBJ_POS);
             }
 
             if (method == null) {
                 if (!firstInvocation) {
-                    mv.visitVarInsn(ALOAD, 1);
-                    invokeInterface( InternalFactHandle.class, "getObject", Object.class );
+                    mv.visitVarInsn(ALOAD, OBJ_POS);
                 }
                 if (!invocation.getReturnType().isAssignableFrom(currentClass)) {
                     cast(invocation.getReturnType());
@@ -904,8 +904,7 @@ public class ASMConditionEvaluatorJitter {
 
         private void jitMapAccessInvocation(MapAccessInvocation invocation, boolean firstInvocation) {
             if (firstInvocation) {
-                mv.visitVarInsn(ALOAD, 1);
-                invokeInterface( InternalFactHandle.class, "getObject", Object.class );
+                mv.visitVarInsn(ALOAD, OBJ_POS);
                 cast(Map.class);
             }
             Class<?> keyClass = jitExpression(invocation.getKey(), invocation.getKeyType());
@@ -923,8 +922,7 @@ public class ASMConditionEvaluatorJitter {
             boolean isStatic = (field.getModifiers() & Modifier.STATIC) != 0;
 
             if (firstInvocation && !isStatic) {
-                mv.visitVarInsn(ALOAD, 1);
-                invokeInterface( InternalFactHandle.class, "getObject", Object.class );
+                mv.visitVarInsn(ALOAD, OBJ_POS);
             }
             if (!isStatic && !field.getDeclaringClass().isAssignableFrom(currentClass)) {
                 cast(field.getDeclaringClass());

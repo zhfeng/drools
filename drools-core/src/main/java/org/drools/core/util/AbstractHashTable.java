@@ -335,7 +335,7 @@ public abstract class AbstractHashTable
         public int hashCodeOf(Tuple tuple, boolean left) {
             return left ?
                    declaration.getHashCode( null, tuple.getObject( declaration ) ) :
-                   extractor.getHashCode( null, tuple.getFactHandle().getObject() );
+                   extractor.getHashCode( null, tuple.getFactObject() );
         }
     }
 

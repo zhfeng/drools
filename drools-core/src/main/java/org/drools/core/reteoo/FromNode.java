@@ -132,10 +132,16 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
                                         final PropagationContext context,
                                         final InternalWorkingMemory workingMemory,
                                         final Object object ) {
-        return new RightTupleImpl( createFactHandle( leftTuple, context, workingMemory, object ) );
+        if ( objectTypeConf == null ) {
+            // use default entry point and object class. Notice that at this point object is assignable to resultClass
+            objectTypeConf = new ClassObjectTypeConf( workingMemory.getEntryPoint(), resultClass, workingMemory.getKnowledgeBase() );
+        }
+        return objectTypeConf.isEvent() || objectTypeConf.isTrait() ?
+               new RightTupleImpl( createFactHandle( leftTuple, context, workingMemory, object ) ) :
+               new RightTupleImpl( object );
     }
 
-    public InternalFactHandle createFactHandle( Tuple leftTuple, PropagationContext context, InternalWorkingMemory workingMemory, Object object ) {
+    private InternalFactHandle createFactHandle( Tuple leftTuple, PropagationContext context, InternalWorkingMemory workingMemory, Object object ) {
         FactHandle _handle = null;
         if ( objectTypeConf == null ) {
             // use default entry point and object class. Notice that at this point object is assignable to resultClass
@@ -177,8 +183,8 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
 
     public void addToCreatedHandlesMap(final Map<Object, RightTuple> matches,
                                        final RightTuple rightTuple) {
-        if ( rightTuple.getFactHandle().isValid() ) {
-            Object object = rightTuple.getFactHandle().getObject();
+        if ( rightTuple.getFactHandle() == null || rightTuple.getFactHandle().isValid() ) {
+            Object object = rightTuple.getFactObject();
             // keeping a list of matches
             RightTuple existingMatch = matches.get( object );
             if ( existingMatch != null ) {
@@ -199,8 +205,7 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
                                           this.betaConstraints.createContext(),
                                           NodeTypeEnums.FromNode );
         return (T) new FromMemory( beta,
-                                   this.dataProvider,
-                                   this.alphaConstraints );
+                                   this.dataProvider );
     }
    
 
@@ -272,8 +277,7 @@ public class FromNode<T extends FromNode.FromMemory> extends LeftTupleSource
         public Object                    providerContext;
 
         public FromMemory(BetaMemory betaMemory,
-                          DataProvider dataProvider,
-                          AlphaNodeFieldConstraint[] constraints) {
+                          DataProvider dataProvider) {
             this.betaMemory = betaMemory;
             this.dataProvider = dataProvider;
             this.providerContext = dataProvider.createContext();

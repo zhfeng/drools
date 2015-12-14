@@ -77,9 +77,8 @@ public class ReactiveObjectUtil {
         @Override
         public void execute( InternalWorkingMemory wm ) {
             ReactiveFromNode.ReactiveFromMemory mem = wm.getNodeMemory(node);
-            InternalFactHandle factHandle = node.createFactHandle( leftTuple, propagationContext, wm, object );
 
-            if ( isAllowed( factHandle, node.getAlphaConstraints(), wm, mem ) ) {
+            if ( isAllowed( object, node.getAlphaConstraints(), wm, mem ) ) {
                 ContextEntry[] context = mem.getBetaMemory().getContext();
                 BetaConstraints betaConstraints = node.getBetaConstraints();
                 betaConstraints.updateFromTuple( context,
@@ -88,7 +87,7 @@ public class ReactiveObjectUtil {
 
                 propagate( sink,
                            leftTuple,
-                           new RightTupleImpl( factHandle ),
+                           new RightTupleImpl( object ),
                            betaConstraints,
                            propagationContext,
                            context,
@@ -99,7 +98,7 @@ public class ReactiveObjectUtil {
                 LeftTuple childLeftTuple = ((LeftTuple)leftTuple).getFirstChild();
                 while (childLeftTuple != null) {
                     LeftTuple next = childLeftTuple.getLeftParentNext();
-                    if ( object == childLeftTuple.getFactHandle().getObject() ) {
+                    if ( object == childLeftTuple.getFactObject() ) {
                         deleteChildLeftTuple( propagationContext, mem.getStagedLeftTuples(), null, childLeftTuple );
                     }
                     childLeftTuple = next;

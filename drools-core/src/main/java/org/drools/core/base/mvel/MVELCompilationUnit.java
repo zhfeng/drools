@@ -307,8 +307,17 @@ public class MVELCompilationUnit
                               GlobalResolver globalResolver,
                               VariableResolverFactory factory) {
         updateFactory(knowledgeHelper, null, rule, rightHandle, rightHandle != null ? rightHandle.getObject() : null, tuple, localVars, workingMemory, globalResolver, factory);
-    }    
-    
+    }
+
+    public void updateFactory(InternalFactHandle rightHandle,
+                              Object rightObject,
+                              Tuple tuple,
+                              InternalWorkingMemory workingMemory,
+                              GlobalResolver globalResolver,
+                              VariableResolverFactory factory) {
+        updateFactory(null, null, null, rightHandle, rightObject, tuple, null, workingMemory, globalResolver, factory);
+    }
+
     public void updateFactory(Object knowledgeHelper,
                               Declaration[] prevDecl,
                               Rule rule,
@@ -337,8 +346,8 @@ public class MVELCompilationUnit
             }
         }
 
-        InternalFactHandle[] handles = tuple instanceof LeftTuple ? ( (LeftTuple) tuple ).toFactHandles() : null;
         if ( operators.length > 0 ) {
+            InternalFactHandle[] handles = tuple instanceof LeftTuple ? ( (LeftTuple) tuple ).toFactHandles() : null;
             for (EvaluatorWrapper operator : operators) {
                 // TODO: need to have one operator per working memory
                 factory.getIndexedVariableResolver(i++).setValue(operator);
@@ -349,9 +358,7 @@ public class MVELCompilationUnit
         Object[] objs = null;
 
         if ( tuple != null ) {
-            if (handles == null) {
-                objs = tuple.toObjects();
-            }
+            objs = tuple.toObjects();
             if ( this.previousDeclarations != null && this.previousDeclarations.length > 0 ) {
                 // Consequences with 'or's will have different declaration offsets, so use the one's from the RTN's subrule.
                 if ( prevDecl == null ) {
@@ -362,7 +369,7 @@ public class MVELCompilationUnit
 
                 for (Declaration decl : prevDecl) {
                     int offset = decl.getPattern().getOffset();
-                    Object o = decl.getValue(workingMemory, objs != null ? objs[offset] : handles[offset].getObject());
+                    Object o = decl.getValue(workingMemory, objs[offset]);
                     factory.getIndexedVariableResolver(i++).setValue(o);
                 }
             }
@@ -373,11 +380,9 @@ public class MVELCompilationUnit
                 Object value;
                 if( readLocalsFromTuple && tuple != null ) {
                     int offset = decl.getPattern().getOffset();
-                    value = decl.getValue( workingMemory,
-                                           objs != null ? objs[offset] : handles[offset].getObject() );
+                    value = decl.getValue( workingMemory, objs[offset] );
                 } else {
-                    value = decl.getValue( workingMemory,
-                                          rightObject ); 
+                    value = decl.getValue( workingMemory, rightObject );
                 }
                 factory.getIndexedVariableResolver( i++ ).setValue( value );
             }

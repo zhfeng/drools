@@ -111,6 +111,11 @@ public class XpathConstraint extends MutableTypeConstraint {
     }
 
     @Override
+    public boolean isAllowedCachedLeft(ContextEntry context, Object object) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isAllowedCachedRight(Tuple tuple, ContextEntry context) {
         throw new UnsupportedOperationException();
     }
@@ -122,6 +127,11 @@ public class XpathConstraint extends MutableTypeConstraint {
 
     @Override
     public boolean isAllowed(InternalFactHandle handle, InternalWorkingMemory workingMemory) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isAllowed(Object object, InternalWorkingMemory workingMemory) {
         throw new UnsupportedOperationException();
     }
 
@@ -411,13 +421,10 @@ public class XpathConstraint extends MutableTypeConstraint {
 
         @Override
         public Iterator getResults(Tuple leftTuple, InternalWorkingMemory wm, PropagationContext ctx, Object providerContext) {
-            InternalFactHandle fh = leftTuple.getFactHandle();
-            Object obj = fh.getObject();
-
+            Object obj = leftTuple.getFactObject();
             if (obj instanceof DroolsQuery) {
                 obj = ((DroolsQuery)obj).getElements()[declaration.getPattern().getOffset()];
             }
-
             return xpathEvaluator.evaluate(wm, leftTuple, obj).iterator();
         }
 

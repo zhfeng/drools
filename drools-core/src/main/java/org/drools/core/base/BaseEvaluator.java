@@ -17,6 +17,8 @@
 package org.drools.core.base;
 
 import org.drools.core.base.evaluators.Operator;
+import org.drools.core.common.InternalWorkingMemory;
+import org.drools.core.rule.VariableRestriction;
 import org.drools.core.spi.Evaluator;
 import org.drools.core.time.Interval;
 
@@ -97,5 +99,10 @@ public abstract class BaseEvaluator
     public String toString() {
         return type.getName()+" "+operator.toString();
     }
-    
+
+    public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory,
+                                      VariableRestriction.VariableContextEntry context,
+                                      Object rightObject) {
+        throw new UnsupportedOperationException();
+    }
 }

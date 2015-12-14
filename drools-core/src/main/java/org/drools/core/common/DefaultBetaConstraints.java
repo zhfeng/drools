@@ -18,7 +18,6 @@ package org.drools.core.common;
 
 import org.drools.core.RuleBaseConfiguration;
 import org.drools.core.reteoo.BetaMemory;
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.reteoo.builder.BuildContext;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.IndexableConstraint;
@@ -175,9 +174,6 @@ public class DefaultBetaConstraints
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedLeft(java.lang.Object)
-     */
     public boolean isAllowedCachedLeft(final ContextEntry[] context,
                                        final InternalFactHandle handle) {
         for (int i = indexed; i < constraints.length; i++) {
@@ -188,9 +184,16 @@ public class DefaultBetaConstraints
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.kie.common.BetaNodeConstraints#isAllowedCachedRight(org.kie.reteoo.ReteTuple)
-     */
+    public boolean isAllowedCachedLeft(final ContextEntry[] context,
+                                       final Object object) {
+        for (int i = indexed; i < constraints.length; i++) {
+            if ( !constraints[i].isAllowedCachedLeft(context[i], object) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isAllowedCachedRight(final ContextEntry[] context,
                                         final Tuple tuple) {
         for (int i = indexed; i < constraints.length; i++) {

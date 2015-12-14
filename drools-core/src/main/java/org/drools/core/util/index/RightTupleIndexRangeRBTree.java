@@ -214,7 +214,7 @@ public class RightTupleIndexRangeRBTree implements TupleMemory, Externalizable {
     }
 
     private Comparable getRightIndexedValue(Tuple rightTuple) {
-        return (Comparable) ascendingIndex.getExtractor().getValue( rightTuple.getFactHandle().getObject() );
+        return (Comparable) ascendingIndex.getExtractor().getValue( rightTuple.getFactObject() );
     }
 
     public class RightTupleBoundedFastIterator implements FastIterator {

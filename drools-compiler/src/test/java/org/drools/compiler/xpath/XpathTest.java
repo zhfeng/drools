@@ -441,7 +441,7 @@ public class XpathTest {
         assertEquals( 2, betaMemory.getLeftTupleMemory().size() );
         Iterator<LeftTuple> it = tupleMemory.iterator();
         for ( LeftTuple next = it.next(); next != null; next = it.next() ) {
-            Object obj = next.getFactHandle().getObject();
+            Object obj = next.getFactObject();
             assertTrue( obj == charlie || obj == debbie );
         }
 
@@ -454,7 +454,7 @@ public class XpathTest {
         assertEquals( 1, betaMemory.getLeftTupleMemory().size() );
         it = tupleMemory.iterator();
         for ( LeftTuple next = it.next(); next != null; next = it.next() ) {
-            Object obj = next.getFactHandle().getObject();
+            Object obj = next.getFactObject();
             assertTrue( obj == charlie );
         }
     }

@@ -62,8 +62,6 @@ public interface LeftTuple extends Tuple {
      */
     boolean equals(final LeftTuple other);
 
-    Object[] toObjectArray();
-
     LeftTuple getParent();
 
     String toTupleTree(int indent);

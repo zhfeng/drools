@@ -16,14 +16,14 @@
 
 package org.drools.core.spi;
 
-import java.io.Serializable;
-
 import org.drools.core.base.ValueType;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
 import org.drools.core.rule.VariableRestriction.VariableContextEntry;
 import org.drools.core.time.Interval;
 import org.kie.api.runtime.rule.Operator;
+
+import java.io.Serializable;
 
 /**
  * A public interface to be implemented by all evaluators
@@ -37,14 +37,14 @@ public interface Evaluator
      * 
      * @return
      */
-    public ValueType getValueType();
+    ValueType getValueType();
 
     /**
      * Returns the operator representation object for this evaluator
      * 
      * @return
      */
-    public Operator getOperator();
+    Operator getOperator();
     
     /**
      * Returns the value type this evaluator will coerce
@@ -55,7 +55,7 @@ public interface Evaluator
      * 
      * @return
      */
-    public ValueType getCoercedValueType();
+    ValueType getCoercedValueType();
     
     /**
      * Evaluates the expression using the provided parameters.
@@ -82,10 +82,10 @@ public interface Evaluator
      * 
      * @return Returns true if evaluation is successful. false otherwise.
      */
-    public boolean evaluate(InternalWorkingMemory workingMemory,
-                            InternalReadAccessor extractor,
-                            InternalFactHandle factHandle,
-                            FieldValue value);
+    boolean evaluate(InternalWorkingMemory workingMemory,
+                     InternalReadAccessor extractor,
+                     InternalFactHandle factHandle,
+                     FieldValue value);
 
     /**
      * Evaluates the expression using the provided parameters.
@@ -119,11 +119,11 @@ public interface Evaluator
      * 
      * @return Returns true if evaluation is successful. false otherwise.
      */
-    public boolean evaluate(InternalWorkingMemory workingMemory,
-                            InternalReadAccessor leftExtractor,
-                            InternalFactHandle left,
-                            InternalReadAccessor rightExtractor,
-                            InternalFactHandle right);
+    boolean evaluate(InternalWorkingMemory workingMemory,
+                     InternalReadAccessor leftExtractor,
+                     InternalFactHandle left,
+                     InternalReadAccessor rightExtractor,
+                     InternalFactHandle right);
 
     /**
      * Evaluates the expression using the provided parameters.
@@ -153,9 +153,13 @@ public interface Evaluator
      * 
      * @return Returns true if evaluation is successful. false otherwise.
      */
-    public boolean evaluateCachedLeft(InternalWorkingMemory workingMemory,
-                                      VariableContextEntry context,
-                                      InternalFactHandle right);
+    boolean evaluateCachedLeft(InternalWorkingMemory workingMemory,
+                               VariableContextEntry context,
+                               InternalFactHandle right);
+
+    boolean evaluateCachedLeft(InternalWorkingMemory workingMemory,
+                               VariableContextEntry context,
+                               Object rightObject);
 
     /**
      * Evaluates the expression using the provided parameters.
@@ -184,9 +188,9 @@ public interface Evaluator
      * 
      * @return Returns true if evaluation is successful. false otherwise.
      */
-    public boolean evaluateCachedRight(InternalWorkingMemory workingMemory,
-                                       VariableContextEntry context,
-                                       InternalFactHandle left);
+    boolean evaluateCachedRight(InternalWorkingMemory workingMemory,
+                                VariableContextEntry context,
+                                InternalFactHandle left);
     
     /**
      * Returns true if this evaluator implements a temporal evaluation,
@@ -196,7 +200,7 @@ public interface Evaluator
      * 
      * @return true if the evaluator is a temporal evaluator. 
      */
-    public boolean isTemporal();
+    boolean isTemporal();
 
     /**
      * In case this is a temporal evaluator, returns the interval 
@@ -204,6 +208,6 @@ public interface Evaluator
      * 
      * @return
      */
-    public Interval getInterval();
+    Interval getInterval();
 
 }

@@ -44,6 +44,9 @@ public interface BetaConstraints
     boolean isAllowedCachedLeft(ContextEntry[] context,
                                 InternalFactHandle handle);
 
+    boolean isAllowedCachedLeft(ContextEntry[] context,
+                                Object object);
+
     boolean isAllowedCachedRight(ContextEntry[] context,
                                  Tuple tuple);
 

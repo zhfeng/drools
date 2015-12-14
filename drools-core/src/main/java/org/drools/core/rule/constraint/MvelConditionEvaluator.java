@@ -85,13 +85,14 @@ public class MvelConditionEvaluator implements ConditionEvaluator {
         this.executableStatement = executableStatement;
     }
 
-    public boolean evaluate(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
-        return evaluate(executableStatement, handle, workingMemory, tuple);
+    @Override
+    public boolean evaluate(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
+        return evaluate(executableStatement, handle, object, workingMemory, tuple);
     }
 
-    public boolean evaluate(ExecutableStatement statement, InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    private boolean evaluate(ExecutableStatement statement, InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         if (compilationUnit == null) {
-            Map<String, Object> vars = valuesAsMap(handle.getObject(), workingMemory, tuple, declarations);
+            Map<String, Object> vars = valuesAsMap(object, workingMemory, tuple, declarations);
             if (operators.length > 0) {
                 if (vars == null) {
                     vars = new HashMap<String, Object>();
@@ -102,16 +103,16 @@ public class MvelConditionEvaluator implements ConditionEvaluator {
                     operator.loadHandles(workingMemory, handles, handle);
                 }
             }
-            return evaluate(statement, handle.getObject(), vars);
+            return evaluate(statement, object, vars);
         }
 
         VariableResolverFactory factory = compilationUnit.createFactory();
-        compilationUnit.updateFactory( null, null, handle,
-                                       tuple, null, workingMemory,
+        compilationUnit.updateFactory( handle, object,
+                                       tuple, workingMemory,
                                        workingMemory.getGlobalResolver(),
                                        factory );
 
-        return (Boolean) MVELSafeHelper.getEvaluator().executeExpression( statement, handle.getObject(), factory );
+        return (Boolean) MVELSafeHelper.getEvaluator().executeExpression( statement, object, factory );
     }
 
     private boolean evaluate(ExecutableStatement statement, Object object, Map<String, Object> vars) {
@@ -120,32 +121,28 @@ public class MvelConditionEvaluator implements ConditionEvaluator {
                (Boolean)MVELSafeHelper.getEvaluator().executeExpression(statement, object, vars);
     }
 
-    ConditionAnalyzer.Condition getAnalyzedCondition() {
+    ConditionAnalyzer.Condition getAnalyzedCondition(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple leftTuple) {
+        ensureCompleteEvaluation(handle, object, workingMemory, leftTuple);
         return new ConditionAnalyzer(executableStatement, declarations, operators, conditionClass).analyzeCondition();
     }
 
-    ConditionAnalyzer.Condition getAnalyzedCondition(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple leftTuple) {
-        ensureCompleteEvaluation(handle, workingMemory, leftTuple);
-        return new ConditionAnalyzer(executableStatement, declarations, operators, conditionClass).analyzeCondition();
-    }
-
-    private void ensureCompleteEvaluation(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    private void ensureCompleteEvaluation(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         if (!evaluated) {
             ASTNode rootNode = getRootNode();
             if (rootNode != null) {
-                ensureCompleteEvaluation(rootNode, handle, workingMemory, tuple);
+                ensureCompleteEvaluation(rootNode, handle, object, workingMemory, tuple);
             }
             evaluated = true;
         }
     }
 
-    private void ensureCompleteEvaluation(ASTNode node, InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple) {
+    private void ensureCompleteEvaluation(ASTNode node, InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple) {
         node = unwrap(node);
         if (!(node instanceof And || node instanceof Or)) {
             return;
         }
-        ensureBranchEvaluation(handle, workingMemory, tuple, ((BooleanNode)node).getLeft());
-        ensureBranchEvaluation(handle, workingMemory, tuple, ((BooleanNode)node).getRight());
+        ensureBranchEvaluation(handle, object, workingMemory, tuple, ((BooleanNode)node).getLeft());
+        ensureBranchEvaluation(handle, object, workingMemory, tuple, ((BooleanNode)node).getRight());
     }
 
     private ASTNode unwrap(ASTNode node) {
@@ -156,14 +153,14 @@ public class MvelConditionEvaluator implements ConditionEvaluator {
         return node;
     }
 
-    private void ensureBranchEvaluation(InternalFactHandle handle, InternalWorkingMemory workingMemory, Tuple tuple, ASTNode node) {
+    private void ensureBranchEvaluation(InternalFactHandle handle, Object object, InternalWorkingMemory workingMemory, Tuple tuple, ASTNode node) {
         if (!isEvaluated(node)) {
             ASTNode next = node.nextASTNode;
             node.nextASTNode = null;
-            evaluate(asCompiledExpression(node), handle, workingMemory, tuple);
+            evaluate(asCompiledExpression(node), handle, object, workingMemory, tuple);
             node.nextASTNode = next;
         }
-        ensureCompleteEvaluation(node, handle, workingMemory, tuple);
+        ensureCompleteEvaluation(node, handle, object, workingMemory, tuple);
     }
 
     private ASTNode unwrapNegation(ASTNode node) {

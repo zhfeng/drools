@@ -27,6 +27,8 @@ public abstract class BaseTuple implements Tuple {
 
     private Object contextObject;
 
+    private Object factObject;
+
     private InternalFactHandle handle;
 
     private PropagationContext propagationContext;
@@ -71,6 +73,14 @@ public abstract class BaseTuple implements Tuple {
 
     public void setFactHandle( InternalFactHandle handle ) {
         this.handle = handle;
+    }
+
+    public Object getFactObject() {
+        return handle != null ? handle.getObject() : factObject;
+    }
+
+    public void setFactObject( Object factObject ) {
+        this.factObject = factObject;
     }
 
     public PropagationContext getPropagationContext() {
@@ -156,5 +166,10 @@ public abstract class BaseTuple implements Tuple {
             entry = entry.getParent();
         }
         return entry;
+    }
+
+    @Override
+    public boolean hasFact() {
+        return handle != null || factObject != null;
     }
 }

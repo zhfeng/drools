@@ -33,7 +33,7 @@ rule "test from using a global"
         list1.add( $cheese );
 end
 
-
+/*
 rule "test from using a declaration"
     when
         $ch : Cheesery()
@@ -49,3 +49,4 @@ rule "test from with filter"
     then
         list3.add( $cheese );
 end
+*/

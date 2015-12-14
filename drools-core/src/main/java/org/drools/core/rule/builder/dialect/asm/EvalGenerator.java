@@ -16,10 +16,9 @@
 package org.drools.core.rule.builder.dialect.asm;
 
 import org.drools.core.WorkingMemory;
-import org.drools.core.rule.builder.dialect.asm.GeneratorHelper.DeclarationMatcher;
-import org.drools.core.common.InternalFactHandle;
 import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.rule.Declaration;
+import org.drools.core.rule.builder.dialect.asm.GeneratorHelper.DeclarationMatcher;
 import org.drools.core.spi.CompiledInvoker;
 import org.drools.core.spi.EvalExpression;
 import org.drools.core.spi.Tuple;
@@ -29,15 +28,7 @@ import java.util.List;
 
 import static org.drools.core.rule.builder.dialect.asm.GeneratorHelper.createInvokerClassGenerator;
 import static org.drools.core.rule.builder.dialect.asm.GeneratorHelper.matchDeclarationsToTuple;
-
-import static org.mvel2.asm.Opcodes.AALOAD;
-import static org.mvel2.asm.Opcodes.ACC_PUBLIC;
-import static org.mvel2.asm.Opcodes.ACONST_NULL;
-import static org.mvel2.asm.Opcodes.ALOAD;
-import static org.mvel2.asm.Opcodes.ARETURN;
-import static org.mvel2.asm.Opcodes.ASTORE;
-import static org.mvel2.asm.Opcodes.INVOKESTATIC;
-import static org.mvel2.asm.Opcodes.IRETURN;
+import static org.mvel2.asm.Opcodes.*;
 
 public class EvalGenerator {
 
@@ -90,8 +81,7 @@ public class EvalGenerator {
                     mv.visitVarInsn(ALOAD, 3); // workingMemory
 
                     mv.visitVarInsn(ALOAD, 5);
-                    invokeInterface(LeftTuple.class, "getFactHandle", InternalFactHandle.class);
-                    invokeInterface(InternalFactHandle.class, "getObject", Object.class); // tuple.getFactHandle().getObject()
+                    invokeInterface(LeftTuple.class, "getFactObject", Object.class); // tuple.getFactObject()
 
                     storeObjectFromDeclaration(declarations[i], expectedDeclarations[i]);
                 }

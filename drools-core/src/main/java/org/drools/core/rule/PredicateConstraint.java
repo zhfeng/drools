@@ -299,10 +299,17 @@ public class PredicateConstraint extends MutableTypeConstraint
         return ctx;
     }
 
+    @Override
     public boolean isAllowed(final InternalFactHandle handle,
                              final InternalWorkingMemory workingMemory) {
+        return isAllowed( handle.getObject(), workingMemory );
+    }
+
+    @Override
+    public boolean isAllowed(final Object object,
+                             final InternalWorkingMemory workingMemory) {
         try {
-            return this.expression.evaluate( handle,
+            return this.expression.evaluate( object,
                                              null,
                                              this.previousDeclarations,
                                              this.localDeclarations,
@@ -310,7 +317,7 @@ public class PredicateConstraint extends MutableTypeConstraint
                                              null ); //((PredicateContextEntry) ctx).dialectContext );
         } catch ( final Exception e ) {
             throw new RuntimeException( "Exception executing predicate " + this.expression,
-                                         e );
+                                        e );
         }
     }
 
@@ -321,11 +328,18 @@ public class PredicateConstraint extends MutableTypeConstraint
         throw new UnsupportedOperationException( "Method not supported. Please contact development team." );
     }
 
+    @Override
     public boolean isAllowedCachedLeft(final ContextEntry context,
                                        final InternalFactHandle handle) {
+        return isAllowedCachedLeft( context, handle.getObject() );
+    }
+
+    @Override
+    public boolean isAllowedCachedLeft(final ContextEntry context,
+                                       final Object object) {
         try {
             final PredicateContextEntry ctx = (PredicateContextEntry) context;
-            return this.expression.evaluate( handle,
+            return this.expression.evaluate( object,
                                              ctx.tuple,
                                              this.previousDeclarations,
                                              this.localDeclarations,
@@ -341,7 +355,7 @@ public class PredicateConstraint extends MutableTypeConstraint
                                         final ContextEntry context) {
         try {
             final PredicateContextEntry ctx = (PredicateContextEntry) context;
-            return this.expression.evaluate( ctx.rightHandle,
+            return this.expression.evaluate( ctx.rightHandle.getObject(),
                                              tuple,
                                              this.previousDeclarations,
                                              this.localDeclarations,
@@ -464,7 +478,7 @@ public class PredicateConstraint extends MutableTypeConstraint
             }, KiePolicyHelper.getAccessContext());
         }
 
-        public boolean evaluate(final InternalFactHandle handle,
+        public boolean evaluate(final Object object,
                 final Tuple tuple, 
                 final Declaration[] previousDeclarations, 
                 final Declaration[] localDeclarations, 
@@ -473,7 +487,7 @@ public class PredicateConstraint extends MutableTypeConstraint
             return AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
                 @Override
                 public Boolean run() throws Exception {
-                    return delegate.evaluate(handle, tuple, previousDeclarations, localDeclarations, workingMemory, context);
+                    return delegate.evaluate(object, tuple, previousDeclarations, localDeclarations, workingMemory, context);
                 }
             }, KiePolicyHelper.getAccessContext());
         }

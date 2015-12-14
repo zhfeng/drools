@@ -292,11 +292,17 @@ public class IsAEvaluatorDefinition implements EvaluatorDefinition {
 
 
         public boolean evaluateCachedLeft( InternalWorkingMemory workingMemory,
-                                           VariableContextEntry context, InternalFactHandle right ) {
+                                           VariableContextEntry context,
+                                           InternalFactHandle right ) {
+            return evaluateCachedLeft( workingMemory, context, right.getObject() );
+        }
+
+        public boolean evaluateCachedLeft( InternalWorkingMemory workingMemory,
+                                           VariableContextEntry context,
+                                           Object rightObject ) {
 
             Object target = ((VariableRestriction.ObjectVariableContextEntry) context).left;
-            Object source = context.getFieldExtractor().getValue( workingMemory, right.getObject() );
-
+            Object source = context.getFieldExtractor().getValue( workingMemory, rightObject );
             return compare( source, target, workingMemory );
         }
 

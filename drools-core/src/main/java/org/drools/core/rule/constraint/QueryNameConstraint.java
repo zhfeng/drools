@@ -19,7 +19,6 @@ import org.drools.core.base.DroolsQuery;
 import org.drools.core.base.field.ObjectFieldImpl;
 import org.drools.core.common.InternalFactHandle;
 import org.drools.core.common.InternalWorkingMemory;
-import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.IndexableConstraint;
 import org.drools.core.spi.AcceptsReadAccessor;
@@ -53,7 +52,11 @@ public class QueryNameConstraint implements
     }
 
     public boolean isAllowed(InternalFactHandle handle, InternalWorkingMemory workingMemory) {
-        return ((DroolsQuery)handle.getObject()).getName().equals(queryName);
+        return isAllowed( handle.getObject(), workingMemory );
+    }
+
+    public boolean isAllowed(Object object, InternalWorkingMemory workingMemory) {
+        return ((DroolsQuery)object).getName().equals(queryName);
     }
 
     public boolean isUnification() {

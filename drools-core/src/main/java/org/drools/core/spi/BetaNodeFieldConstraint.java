@@ -26,6 +26,9 @@ public interface BetaNodeFieldConstraint
     boolean isAllowedCachedLeft(ContextEntry context,
                                 InternalFactHandle handle);
 
+    boolean isAllowedCachedLeft(ContextEntry context,
+                                Object object);
+
     boolean isAllowedCachedRight(Tuple tuple,
                                  ContextEntry context);
 

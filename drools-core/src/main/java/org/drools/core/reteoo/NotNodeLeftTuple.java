@@ -152,5 +152,4 @@ public class NotNodeLeftTuple extends BaseLeftTuple {
     public void setBlockedNext(LeftTuple blockerNext) {
         this.blockedNext = blockerNext;
     }
-
 }

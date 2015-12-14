@@ -491,9 +491,9 @@ public class ProtobufOutputMarshaller {
                         .setTuple( PersisterHelper.createTuple( leftTuple ) );
                 for ( RightTuple rightTuple : matches.values() ) {
                     FactHandle _handle = ProtobufMessages.FactHandle.newBuilder()
-                            .setId( rightTuple.getFactHandle().getId() )
-                            .setRecency( rightTuple.getFactHandle().getRecency() )
-                            .build();
+                                                                    .setId( rightTuple.getFactHandle().getId() )
+                                                                    .setRecency( rightTuple.getFactHandle().getRecency() )
+                                                                    .build();
                     _context.addHandle( _handle );
                 }
                 _from.addContext( _context.build() );

@@ -47,6 +47,10 @@ public class NegConstraint implements AlphaNodeFieldConstraint {
         return ( !operator && !handle.isNegated() ) || ( operator && handle.isNegated() );
     }
 
+    @Override
+    public boolean isAllowed( Object object, InternalWorkingMemory workingMemory ) {
+        throw new UnsupportedOperationException();
+    }
 
     public AlphaNodeFieldConstraint cloneIfInUse() {
         if (inUse.compareAndSet(false, true)) {

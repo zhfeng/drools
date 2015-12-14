@@ -16,7 +16,6 @@
 
 package org.drools.core.common;
 
-import org.drools.core.reteoo.LeftTuple;
 import org.drools.core.rule.ContextEntry;
 import org.drools.core.rule.Declaration;
 import org.drools.core.rule.Pattern;
@@ -81,11 +80,18 @@ public class InstanceNotEqualsConstraint
         return context.left != context.right;
     }
 
+    @Override
     public boolean isAllowedCachedLeft(final ContextEntry context,
                                        final InternalFactHandle handle) {
         return ((InstanceNotEqualsConstraintContextEntry) context).left != handle.getObject();
     }
 
+    @Override
+    public boolean isAllowedCachedLeft(ContextEntry context, Object object) {
+        return ((InstanceNotEqualsConstraintContextEntry) context).left != object;
+    }
+
+    @Override
     public boolean isAllowedCachedRight(final Tuple tuple,
                                         final ContextEntry context) {
         return tuple.get( this.otherPattern.getOffset() ).getObject() != ((InstanceNotEqualsConstraintContextEntry) context).right;

@@ -438,8 +438,8 @@ public class TupleIndexHashTable extends AbstractHashTable implements TupleMemor
         }
 
         return left ?
-               this.index.equal( tuple.getFactHandle().getObject(), list.getFirst() ) :
-               this.index.equal( list.getFirst().getFactHandle().getObject(), tuple );
+               this.index.equal( tuple.getFactObject(), list.getFirst() ) :
+               this.index.equal( list.getFirst().getFactObject(), tuple );
     }
 
     private boolean matchesRight( TupleList list, Tuple tuple, int tupleHashCode ) {
@@ -449,7 +449,7 @@ public class TupleIndexHashTable extends AbstractHashTable implements TupleMemor
 
         return left ?
                this.index.equal( list.getFirst(), tuple ) :
-               this.index.equal( list.getFirst().getFactHandle().getObject(), tuple.getFactHandle().getObject() );
+               this.index.equal( list.getFirst().getFactObject(), tuple.getFactObject() );
     }
 
     public int size() {
@@ -507,7 +507,7 @@ public class TupleIndexHashTable extends AbstractHashTable implements TupleMemor
         if ( tupleList.getFirst().getFactHandle() == factHandle ) {
             Tuple rightTuple = ( Tuple ) tupleList.getFirst().getNext();
             if ( rightTuple != null ) {
-                return this.index.equal( rightTuple.getFactHandle().getObject(),
+                return this.index.equal( rightTuple.getFactObject(),
                                          tuple );
             }
         }

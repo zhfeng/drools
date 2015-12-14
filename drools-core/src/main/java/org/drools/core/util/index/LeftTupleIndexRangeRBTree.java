@@ -207,7 +207,7 @@ public class LeftTupleIndexRangeRBTree implements Externalizable, TupleMemory {
     }
 
     private Comparable getRightIndexedValue(Tuple tuple) {
-        return (Comparable) ascendingIndex.getExtractor().getValue( tuple.getFactHandle().getObject() );
+        return (Comparable) ascendingIndex.getExtractor().getValue( tuple.getFactObject() );
     }
 
     private Tuple getFirst(Comparable key) {
