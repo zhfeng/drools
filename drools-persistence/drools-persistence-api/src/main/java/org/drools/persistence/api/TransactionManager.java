@@ -40,7 +40,7 @@ public interface TransactionManager {
 
     void rollback(boolean transactionOwner);
 
-    void registerTransactionSynchronization(TransactionSynchronization ts);
+    void registerTransactionSynchronization(TransactionSynchronization ts, boolean interposed);
 
     void putResource(Object key, Object resource);
 

@@ -86,7 +86,7 @@ public class ManualTransactionManager
     public void rollback(boolean transactionOwner) {
     }
 
-    public void registerTransactionSynchronization(TransactionSynchronization ts) {
+    public void registerTransactionSynchronization(TransactionSynchronization ts, boolean interposed) {
         this.transactionSynchronization = ts;
     }
 

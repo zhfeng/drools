@@ -28,7 +28,7 @@ public class TransactionManagerHelper {
         TransactionSynchronizationContainer container = (TransactionSynchronizationContainer)txm.getResource(TransactionSynchronizationContainer.RESOURCE_KEY);
         if (container == null) {
             container = new TransactionSynchronizationContainer();
-            txm.registerTransactionSynchronization( container );
+            txm.registerTransactionSynchronization( container, true );
             txm.putResource(TransactionSynchronizationContainer.RESOURCE_KEY, container);
         }
         container.addTransactionSynchronization(synchronization);

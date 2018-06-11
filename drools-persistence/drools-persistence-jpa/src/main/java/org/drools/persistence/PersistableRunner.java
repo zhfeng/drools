@@ -544,7 +544,7 @@ public class PersistableRunner implements SingleSessionCommandService {
 
     private void registerUpdateSync() {
         if (this.txm.getResource("TriggerUpdateTransactionSynchronization-"+this.toString()) == null) {
-            this.txm.registerTransactionSynchronization(new TriggerUpdateTransactionSynchronization(txm, env));
+            this.txm.registerTransactionSynchronization(new TriggerUpdateTransactionSynchronization(txm, env), false);
             this.txm.putResource("TriggerUpdateTransactionSynchronization-"+this.toString(), true);
         }
     }

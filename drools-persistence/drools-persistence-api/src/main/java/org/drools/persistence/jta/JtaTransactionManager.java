@@ -300,8 +300,8 @@ public class JtaTransactionManager
         }
     }
 
-    public void registerTransactionSynchronization(final TransactionSynchronization ts) {
-        if ( this.tsr != null ) {
+    public void registerTransactionSynchronization(final TransactionSynchronization ts, boolean interposed) {
+        if ( this.tsr != null && interposed) {
             TransactionSynchronizationRegistryHelper.registerTransactionSynchronization( this.tsr,
                                                                                          ts );
         } else if ( this.tm != null ) {
